@@ -38,15 +38,16 @@
 
         var geom = new THREE.Geometry(); 
 
-        drawRect(geom,0,0,40,20);
-        drawRect(geom,40,0,60,-40);
-        drawRect(geom,0,-40,40,-60);
-        drawRect(geom,-20,0,0,-40);
+        // console.log(geom.vertices.length);
+        drawRect(geom,0,0,80,20);
+        drawRect(geom,120,-20,100,-60);
+        drawRect(geom,0,-80,80,-100);
+        drawRect(geom,-40,-20,-20,-60);
 
-        drawCurve(geom,40,0,60,20,50,'RT');
-        drawCurve(geom,40,-60,60,-40,50,'RB');
-        drawCurve(geom,-20,-60,0,-40,50,'LB');
-        drawCurve(geom,-20,0,0,20,50,'LT');
+        drawCurve2(geom,80,-20,10,'RT');
+        drawCurve2(geom,80,-100,10,'RB');
+        drawCurve2(geom,-40,-100,10,'LB');
+        drawCurve2(geom,-40,-20,10,'LT');
         
         geom.computeFaceNormals();
 
@@ -120,6 +121,53 @@
 
         geom.faces.push( new THREE.Face3( i1, i2, i3) );
         geom.faces.push( new THREE.Face3( i2, i3, i4) );
+    }
+
+    function drawCurve2(geom,x1,y1,detail,corner){
+        x2=x1+40;
+        y2=y1+40;
+        if(corner == 'RT'){
+            xRot = 1;
+            yRot = 1;
+            xPos = 0;
+            yPos = 0;
+        }
+        if(corner == 'LT'){
+            xRot = -1;
+            yRot = 1;
+            xPos = x1+x2;
+            yPos = 0;
+        }
+        if(corner == 'RB'){
+            xRot = 1;
+            yRot = -1;
+            xPos = 0;
+            yPos = y1+y2;
+        }
+        if(corner == 'LB'){
+            xRot = -1;
+            yRot = -1;
+            xPos = x1+x2;
+            yPos = y1+y2;
+        }
+        nbVertice = geom.vertices.length;
+
+        for (var i = detail  ; i >= 0 ; i--) {
+            vTmp = new THREE.Vector3(
+                ((x2-x1)/2*(Math.cos(i*Math.PI/(2*detail)))+x1)*xRot+xPos,  // x
+                ((y2-y1)/2*(Math.sin(i*Math.PI/(2*detail)))+y1)*yRot+yPos,  // y
+                0);                                                         // z
+            geom.vertices.push(vTmp);
+            vTmp = new THREE.Vector3(
+                ((x2-x1)*(Math.cos(i*Math.PI/(2*detail)))+x1)*xRot+xPos,  // x
+                ((y2-y1)*(Math.sin(i*Math.PI/(2*detail)))+y1)*yRot+yPos,  // y
+                0);                                                         // z
+            geom.vertices.push(vTmp);
+        };
+
+        for (var i = nbVertice ; i < (detail*2)+nbVertice ; i++) {
+            geom.faces.push( new THREE.Face3(i,i+1,i+2));
+        };
     }
 
     function drawCurve(geom,x1,y1,x2,y2,detail,corner){
