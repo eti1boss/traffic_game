@@ -6,9 +6,9 @@
     <script src="libs/dat.gui.min.js"></script>
     <script src="libs/stats.min.js"></script>
     <script src="libs/OrbitControls.js"></script>
-        <script src="libs/NURBSCurve.js"></script>
-        <script src="libs/NURBSSurface.js"></script>
-        <script src="libs/NURBSUtils.js"></script>
+    <script src="physi.js"></script>
+    <script src="physijs_worker.js"></script>
+    <script src="ammo.js"></script>
     <style>
         body {
             /* set margin to 0 and overflow to hidden, to go fullscreen */
@@ -26,46 +26,112 @@
     var spotLight;
     var cameraControl;
     var ambientLight;
-
-    /**
+    var object ,cube, line;
+    var way = [];
+    var pos = 0;
+ 
+   /**
      * Initializes the scene, camera and objects. Called when the window is
      * loaded by using window.onload (see below)
      */
     function init() {
 
         // create a scene, that will hold all our elements such as objects, cameras and lights.
-        scene = new THREE.Scene();
+        scene = new Physijs.Scene;
+        scene.setGravity(new THREE.Vector3(0,-100,0));
 
         var geom = new THREE.Geometry(); 
 
         // console.log(geom.vertices.length);
         drawRect(geom,0,0,80,20);
-        drawRect(geom,120,-20,100,-60);
-        drawRect(geom,0,-80,80,-100);
-        drawRect(geom,-40,-20,-20,-60);
+        drawRect(geom,100,-20,120,-60);
+        drawRect(geom,80,-80,0,-100);
+        drawRect(geom,-20,-60,-40,-20);
 
-        drawCurve2(geom,80,-20,10,'RT');
-        drawCurve2(geom,80,-100,10,'RB');
-        drawCurve2(geom,-40,-100,10,'LB');
-        drawCurve2(geom,-40,-20,10,'LT');
+
+        for(i=0;i<80;i+=2){
+            way.push({x:i,y:7,z:-10});
+        }
+        drawCurve2(geom,80,20,120,-20,10,'RT');
+        for(i=20;i<60;i+=2){
+            way.push({x:110,y:7,z:i});
+        }
+        drawCurve2(geom,120,-60,80,-100,10,'RB');
+        for(i=80;i>0;i-=2){
+            way.push({x:i,y:7,z:90});
+        }
+        drawCurve2(geom,0,-100,-40,-60,10,'LB');
+        for(i=60;i>20;i-=2){
+            way.push({x:-30,y:7,z:i});
+        }
+        drawCurve2(geom,-40,-20,0,20,10,'LT');
         
         geom.computeFaceNormals();
 
-        var material = new THREE.MeshLambertMaterial({
-            color: 0xffffff,
-            side : THREE.DoubleSide
-        });
+        var material = Physijs.createMaterial(new THREE.MeshLambertMaterial({color: 0xffffff,side : THREE.DoubleSide}));
 
-        var object = new THREE.Mesh( geom, material );
+        object = new Physijs.BoxMesh( geom, material);
 
-        object.position.z = 0;//move a bit back - size of 500 is a bit big
-        object.rotation.y = -Math.PI * 0;//triangle is pointing in depth, rotate it -90 degrees on Y
+        object.position.z = 0;
+        object.rotation.x = Math.PI * -0.5;
 
         scene.add(object);
 
-        ambientLight = new THREE.AmbientLight(0xffffff);
-        ambientLight.name='ambient';
-        scene.add(ambientLight);
+        addLights();
+
+        ground_material = Physijs.createMaterial(
+            new THREE.MeshPhongMaterial({opacity:0,transparent:true}),
+            .9,
+            .6
+            );
+
+        ground = new Physijs.BoxMesh(
+            new THREE.BoxGeometry(1000,1,1000),
+            ground_material
+            )
+
+        ground.receiveShadow = true;
+        ground.position.y = 0;
+
+        scene.add(ground);
+
+        for (var i = 0 ; i < way.length; i++) {
+            var dotGeometry = new THREE.PlaneGeometry(1,1);
+            var dotMaterial = new THREE.MeshLambertMaterial({color:0x000000});
+            var dot = new THREE.Mesh(dotGeometry,dotMaterial);
+            
+            dot.rotation.x = -0.5 * Math.PI;
+            dot.position.x = way[i].x;
+            dot.position.y = way[i].y;
+            dot.position.z = way[i].z;
+
+            scene.add(dot);
+        };
+
+
+        // create a cube
+        var cubeGeometry = new THREE.BoxGeometry(12,12,12);
+
+        var myTexture = THREE.ImageUtils.loadTexture("assets/textures/wood.png");
+        var cubeMaterial = new THREE.MeshPhongMaterial({map:myTexture,transparent : true,opacity:1});
+
+        // var cubeMaterial = new THREE.MeshLambertMaterial({color: 'red',transparent : true,opacity:0.5});
+        cube = new Physijs.BoxMesh(cubeGeometry,cubeMaterial,10);
+        cube.castShadow = true;
+        cube.name = 'cube';
+        cube.position.set(20,100,-40);
+
+        // add the cube to the scene
+        scene.add(cube);
+        // create a cube
+
+        // var cubeMaterial = new THREE.MeshLambertMaterial({color: 'red',transparent : true,opacity:0.5});
+        cube2 = new Physijs.BoxMesh(cubeGeometry,cubeMaterial,100);
+        cube2.castShadow = true;
+        cube2.position.set(0,50,-40);
+
+        // add the cube to the scene
+        scene.add(cube2);
 
         // create a camera, which defines where we're looking at.
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -77,9 +143,9 @@
         renderer.shadowMapEnabled = true;
 
         // position and point the camera to the center of the scene
-        camera.position.x = 0;
-        camera.position.y = 0;
-        camera.position.z = 150;
+        camera.position.x = 200;
+        camera.position.y = 100;
+        camera.position.z = 200;
         camera.lookAt(scene.position);
         cameraControl = new THREE.OrbitControls(camera);
 
@@ -89,6 +155,11 @@
             this.opacity = 0.6;
             this.color = 0xb12929;
         };
+
+        sphereTexture = THREE.ImageUtils.loadTexture("assets/textures/planets/mercurymap.jpg");
+        sphereMaterial = new THREE.MeshPhongMaterial({map:sphereTexture,transparent:false,opacity:1});
+        SphereGeometry = new THREE.SphereGeometry(1,60,60);
+        // addSphere(800);
 
         // add extra
         addControlGui(control);
@@ -100,6 +171,58 @@
         // call the render function, after the first render, interval is determined
         // by requestAnimationFrame
         render();
+        // console.log(object.mate);
+    }
+
+        function addSphere(nb){
+        for (var i = 0 ; i < nb; i++) {
+            var tmpSphere = new Physijs.BoxMesh(SphereGeometry,sphereMaterial);
+
+            var num = Math.floor(Math.random()*100) + 1;
+            num *= Math.floor(Math.random()*2) == 1 ? 1 : -1;
+            x=num;
+
+            var num = Math.floor(Math.random()*30) + 10;
+            // num *= Math.floor(Math.random()*2) == 1 ? 1 : -1;
+            y=num;
+
+            var num = Math.floor(Math.random()*100) + 1;
+            num *= Math.floor(Math.random()*2) == 1 ? 1 : -1;
+            z=num;
+            tmpSphere.position.set(x,y,z);
+            scene.add(tmpSphere);
+        };
+    }
+
+    window.onkeydown = checkKey;
+    
+    function checkKey(e){
+        e = e || window.event;
+
+        var factor = 0.3;
+
+        if(e.keyCode == '81'){//left
+        }
+        if(e.keyCode == '90'){//go
+            // console.log(way[pos]);
+            cube.position.x = way[pos].x;
+            cube.position.y = way[pos].y;
+            cube.position.z = way[pos].z;
+            cube.__dirtyPosition = true;
+            pos++;
+            if(pos == way.length)
+                pos = 0;
+        }
+        if(e.keyCode == '68'){//right          
+        }
+        if(e.keyCode == '83'){//back
+        }
+        if(e.keyCode == '65'){//up
+        }
+        if(e.keyCode == '69'){//down
+        }
+
+        // e.preventDefault();
     }
 
     function drawRect(geom,x1,y1,x2,y2){
@@ -123,12 +246,11 @@
         geom.faces.push( new THREE.Face3( i2, i3, i4) );
     }
 
-    function drawCurve2(geom,x1,y1,detail,corner){
-        x2=x1+40;
-        y2=y1+40;
+    function drawCurve2(geom,x1,y1,x2,y2,detail,corner){
+
         if(corner == 'RT'){
             xRot = 1;
-            yRot = 1;
+            yRot = -1;
             xPos = 0;
             yPos = 0;
         }
@@ -139,20 +261,21 @@
             yPos = 0;
         }
         if(corner == 'RB'){
-            xRot = 1;
-            yRot = -1;
-            xPos = 0;
-            yPos = y1+y2;
+            xRot = -1;
+            yRot = 1;
+            xPos = x1+x2;
+            yPos = 0;
         }
         if(corner == 'LB'){
-            xRot = -1;
+            xRot = 1;
             yRot = -1;
-            xPos = x1+x2;
+            xPos = x1;
             yPos = y1+y2;
         }
         nbVertice = geom.vertices.length;
 
-        for (var i = detail  ; i >= 0 ; i--) {
+        for (var i = 0  ; i <= detail ; i++) {
+            console.log(i);
             vTmp = new THREE.Vector3(
                 ((x2-x1)/2*(Math.cos(i*Math.PI/(2*detail)))+x1)*xRot+xPos,  // x
                 ((y2-y1)/2*(Math.sin(i*Math.PI/(2*detail)))+y1)*yRot+yPos,  // y
@@ -163,7 +286,22 @@
                 ((y2-y1)*(Math.sin(i*Math.PI/(2*detail)))+y1)*yRot+yPos,  // y
                 0);                                                         // z
             geom.vertices.push(vTmp);
+
         };
+
+        tmpArray = [];
+        for (var i = 0  ; i <= detail ; i+=.5) {
+                x = ((x2-x1)*3/4*(Math.cos(i*Math.PI/(2*detail)))+x1)*xRot+xPos;  // x
+                z = -((y2-y1)*3/4*(Math.sin(i*Math.PI/(2*detail)))+y1)*yRot-yPos;  // y
+                y = 7;
+
+               tmpArray.push({x:x,y:7,z:z});
+                                                                       // z
+           }
+           if(yRot == -1){
+                tmpArray.reverse();         
+           }
+           way = way.concat(tmpArray);
 
         for (var i = nbVertice ; i < (detail*2)+nbVertice ; i++) {
             geom.faces.push( new THREE.Face3(i,i+1,i+2));
@@ -252,7 +390,7 @@
         camera.lookAt(scene.position);
 
 
-        ambientLight.color = new THREE.Color(control.color);
+        // ambientLight.color = new THREE.Color(control.color);
 
         // FPS update 
         stats.update();
@@ -261,9 +399,18 @@
         // render using requestAnimationFrame
         requestAnimationFrame(render);
         renderer.render(scene, camera);
+        // object.material.color = new THREE.Color(parseInt(getRandomColor()));
+        scene.simulate();   
     }
 
-
+function getRandomColor() {
+    var letters = '0123456789ABCDEF'.split('');
+    var color = '0x';
+    for (var i = 0; i < 6; i++ ) {
+        color += letters[Math.floor(Math.random() * 16)];
+    }
+    return color;
+}
     /**
      * Function handles the resize event. This make sure the camera and the renderer
      * are updated at the correct moment.
@@ -279,6 +426,67 @@
     // calls the handleResize function when the window is resized
     window.addEventListener('resize', handleResize, false);
 
+    function addLights(){
+        // ambientLight = new THREE.AmbientLight(0xffffff);
+        // ambientLight.name='ambient';
+        // scene.add(ambientLight);
+
+        dirLight = new THREE.DirectionalLight(0xff0def,.4);
+        dirLight.position.set(0,500,0);
+        dirLight.target.position.set(0,0,0);
+        scene.add(dirLight);
+
+        dirLight1 = new THREE.DirectionalLight(0xcccc11,.4);
+        dirLight1.position.set(0,-500,0);
+        dirLight1.target.position.set(0,0,0);
+        scene.add(dirLight1);
+
+        dirLight2 = new THREE.DirectionalLight(0xeeeeef,.5);
+        dirLight2.position.set(50,50,0);
+        dirLight2.target.position.set(0,50,0);
+        scene.add(dirLight2);
+
+        dirLight3 = new THREE.DirectionalLight(0xeeeeef,.5);
+        dirLight3.position.set(0,50,50);
+        dirLight3.target.position.set(0,50,0);
+        scene.add(dirLight3);
+
+        dirLight4 = new THREE.DirectionalLight(0xeeeeef,.5);
+        dirLight4.position.set(-50,50,0);
+        dirLight4.target.position.set(0,50,0);
+        scene.add(dirLight4);
+
+        dirLight45 = new THREE.DirectionalLight(0xeeeeef,.5);
+        dirLight45.position.set(0,50,-50);
+        dirLight45.target.position.set(0,50,0);
+        scene.add(dirLight45);
+
+        // create light
+        spotLight = new THREE.SpotLight(0xffffff,0.25);
+        spotLight.position.set(0,500,0);
+        spotLight.target.position.set(0,0,0);
+        scene.add(spotLight);
+
+        spotLight2 = new THREE.SpotLight(0xff0000,.7);
+        spotLight2.position.set(100,50,0);
+        spotLight2.target.position.set(20,0,0);
+        scene.add(spotLight2);
+
+        spotLight3 = new THREE.SpotLight(0x00ff00,.7);
+        spotLight3.position.set(0,50,100);
+        spotLight3.target.position.set(0,0,20);
+        scene.add(spotLight3);
+
+        spotLight4 = new THREE.SpotLight(0x0000ff,.7);
+        spotLight4.position.set(-100,50,-100);
+        spotLight4.target.position.set(-20,0,-20);
+        scene.add(spotLight4);
+
+        spotLight4 = new THREE.SpotLight(0xffff00,.7);
+        spotLight4.position.set(50,50,50);
+        spotLight4.target.position.set(20,0,20);
+        scene.add(spotLight4);
+    }
 </script>
 <body>
 </body>
