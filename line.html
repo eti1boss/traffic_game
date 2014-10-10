@@ -6,6 +6,7 @@
     <script src="libs/dat.gui.min.js"></script>
     <script src="libs/stats.min.js"></script>
     <script src="libs/OrbitControls.js"></script>
+    <script src="libs/ColladaLoader.js"></script>
     <script src="physi.js"></script>
     <script src="physijs_worker.js"></script>
     <script src="ammo.js"></script>
@@ -28,7 +29,11 @@
     var ambientLight;
     var object ,cube, line;
     var way = [];
+    var way2 = [];
     var pos = 0;
+    var obj;
+    SPEED=0;
+    ROTATION=0;
  
    /**
      * Initializes the scene, camera and objects. Called when the window is
@@ -50,21 +55,27 @@
 
 
         for(i=0;i<80;i+=2){
-            way.push({x:i,y:7,z:-10});
+            way.push({x:i,y:7,z:-5});
+            way2.push({x:i,y:7,z:-15});
         }
         drawCurve2(geom,80,20,120,-20,10,'RT');
         for(i=20;i<60;i+=2){
-            way.push({x:110,y:7,z:i});
+            way.push({x:105,y:7,z:i});
+            way2.push({x:115,y:7,z:i});
         }
         drawCurve2(geom,120,-60,80,-100,10,'RB');
         for(i=80;i>0;i-=2){
-            way.push({x:i,y:7,z:90});
+            way.push({x:i,y:7,z:85});
+            way2.push({x:i,y:7,z:95});
         }
         drawCurve2(geom,0,-100,-40,-60,10,'LB');
         for(i=60;i>20;i-=2){
-            way.push({x:-30,y:7,z:i});
+            way.push({x:-25,y:7,z:i});
+            way2.push({x:-35,y:7,z:i});
         }
         drawCurve2(geom,-40,-20,0,20,10,'LT');
+
+        way2.reverse();
         
         geom.computeFaceNormals();
 
@@ -102,10 +113,23 @@
             
             dot.rotation.x = -0.5 * Math.PI;
             dot.position.x = way[i].x;
-            dot.position.y = way[i].y;
+            dot.position.y = way[i].y-6.9;
             dot.position.z = way[i].z;
 
-            scene.add(dot);
+            // scene.add(dot);
+        };
+
+        for (var i = 0 ; i < way2.length; i++) {
+            var dotGeometry = new THREE.PlaneGeometry(1,1);
+            var dotMaterial = new THREE.MeshLambertMaterial({color:0x000000});
+            var dot = new THREE.Mesh(dotGeometry,dotMaterial);
+            
+            dot.rotation.x = -0.5 * Math.PI;
+            dot.position.x = way2[i].x;
+            dot.position.y = way2[i].y-6.9;
+            dot.position.z = way2[i].z;
+
+            // scene.add(dot);
         };
 
 
@@ -131,7 +155,15 @@
         cube2.position.set(0,50,-40);
 
         // add the cube to the scene
-        scene.add(cube2);
+        // scene.add(cube2);
+
+
+        touareg('dae1',0);
+        mclaren('dae2',0);
+        // tron('dae3',600);
+        // model(dae3,10);
+        // model(dae4,10);
+        // model(dae5,10);
 
         // create a camera, which defines where we're looking at.
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -174,6 +206,58 @@
         // console.log(object.mate);
     }
 
+    function touareg(name,pos){
+
+        loader = new THREE.ColladaLoader();
+        loader.load('assets/models/touareg.dae',function colladaReady( collada ){
+            var obj = collada.scene;
+            // skin = collada.skins [ 0 ];
+            obj.scale.x = obj.scale.y = obj.scale.z = .005;
+
+            //i'll add code here later for extra bump mapping on webgl versions
+
+            //usefull for shadows on webgl version
+            // daemesh = player.children[0];
+            obj.castShadow = true;
+            obj.receiveShadow = true;
+            // obj.rotation.y = Math.PI * 1;
+
+            obj.position.x = way2[pos].x;
+            obj.position.y = way2[pos].y-7.1;
+            obj.position.z = way2[pos].z;
+            obj.pos=pos;
+            obj.name = name;
+            scene.add( obj ); 
+        });
+
+    }
+
+    function mclaren(name,pos){
+
+        loader = new THREE.ColladaLoader();
+        loader.load('assets/models/mclaren/mclaren.dae',function colladaReady( collada ){
+            var obj = collada.scene;
+            // skin = collada.skins [ 0 ];
+            obj.scale.x = obj.scale.y = obj.scale.z = .9;
+
+            //i'll add code here later for extra bump mapping on webgl versions
+
+            //usefull for shadows on webgl version
+            // daemesh = player.children[0];
+            obj.castShadow = true;
+            obj.receiveShadow = true;
+            obj.rotation.y = Math.PI * .5;
+
+            obj.position.x = way[pos].x;
+            obj.position.y = way[pos].y-7.1;
+            obj.position.z = way[pos].z;
+            obj.pos=pos;
+            obj.name = name;
+            scene.add( obj ); 
+        });
+
+    }
+
         function addSphere(nb){
         for (var i = 0 ; i < nb; i++) {
             var tmpSphere = new Physijs.BoxMesh(SphereGeometry,sphereMaterial);
@@ -204,18 +288,18 @@
         if(e.keyCode == '81'){//left
         }
         if(e.keyCode == '90'){//go
-            // console.log(way[pos]);
-            cube.position.x = way[pos].x;
-            cube.position.y = way[pos].y;
-            cube.position.z = way[pos].z;
-            cube.__dirtyPosition = true;
-            pos++;
-            if(pos == way.length)
-                pos = 0;
+            for (var i = 0; i <= 1; i+=.5) {
+                SPEED=i;
+            };
+            // SPEED=1;
+            // go('way2','dae1');
         }
         if(e.keyCode == '68'){//right          
         }
         if(e.keyCode == '83'){//back
+            for (var i = 1; i >= 0; i-=.5) {
+                SPEED=i;
+            };
         }
         if(e.keyCode == '65'){//up
         }
@@ -223,6 +307,68 @@
         }
 
         // e.preventDefault();
+    }
+
+    function go(wayName,name){
+        var obj = scene.getObjectByName(name);
+
+        if(wayName == 'way'){
+            for (var i = 0; i < SPEED; i++) {
+
+                if(obj.pos >= way.length){
+                    obj.pos = 0;
+                }
+
+                obj.position.x = way[obj.pos].x;
+                obj.position.y = way[obj.pos].y-7.1;
+                obj.position.z = way[obj.pos].z;
+
+                if(way[obj.pos].rot != undefined){
+                    obj.rotation.y-=((Math.PI*.5)/39);
+                }
+                else{
+                    if(-obj.rotation.y > 1.5 && -obj.rotation.y < 1.6 ) obj.rotation.y = -Math.PI* .5;
+                    if(-obj.rotation.y > 3.1 && -obj.rotation.y < 3.2 ) obj.rotation.y = -Math.PI* 1;
+                    if(-obj.rotation.y > 4.7 && -obj.rotation.y < 4.8 ) obj.rotation.y = -Math.PI* 1.5;
+                    if(-obj.rotation.y > 6.2 && -obj.rotation.y < 6.3 ) obj.rotation.y = -Math.PI* 2;
+                }       
+                if(obj.rotation.y <= -Math.PI*2){
+                    obj.rotation.y=0;
+                }
+                obj.pos+=1;
+            };
+        }
+        if(wayName == 'way2'){
+            for (var i = 0; i < SPEED; i++) {
+
+                if(obj.pos >= way2.length){
+                    obj.pos = 0;
+                }
+
+                obj.position.x = way2[obj.pos].x;
+                obj.position.y = way2[obj.pos].y-7.1;
+                obj.position.z = way2[obj.pos].z;
+
+                if(way2[obj.pos].rot != undefined){
+                    obj.rotation.y+=((Math.PI*.5)/39);
+                }
+                else{
+                    if(obj.rotation.y > 1.5 && obj.rotation.y < 1.6 ) obj.rotation.y = Math.PI* .5;
+                    if(obj.rotation.y > 3.1 && obj.rotation.y < 3.2 ) obj.rotation.y = Math.PI* 1;
+                    if(obj.rotation.y > 4.7 && obj.rotation.y < 4.8 ) obj.rotation.y = Math.PI* 1.5;
+                    if(obj.rotation.y > 6.2 && obj.rotation.y < 6.3 ) obj.rotation.y = Math.PI* 2;
+                }
+                if(obj.rotation.y >= Math.PI*2){
+                    obj.rotation.y=0;
+                }
+                obj.pos+=1;
+            };
+        }
+        
+
+        // console.log(way[obj.pos].rot);
+
+
     }
 
     function drawRect(geom,x1,y1,x2,y2){
@@ -275,7 +421,7 @@
         nbVertice = geom.vertices.length;
 
         for (var i = 0  ; i <= detail ; i++) {
-            console.log(i);
+            // console.log(i);
             vTmp = new THREE.Vector3(
                 ((x2-x1)/2*(Math.cos(i*Math.PI/(2*detail)))+x1)*xRot+xPos,  // x
                 ((y2-y1)/2*(Math.sin(i*Math.PI/(2*detail)))+y1)*yRot+yPos,  // y
@@ -290,72 +436,51 @@
         };
 
         tmpArray = [];
-        for (var i = 0  ; i <= detail ; i+=.5) {
-                x = ((x2-x1)*3/4*(Math.cos(i*Math.PI/(2*detail)))+x1)*xRot+xPos;  // x
-                z = -((y2-y1)*3/4*(Math.sin(i*Math.PI/(2*detail)))+y1)*yRot-yPos;  // y
+        for (var i = 0  ; i <= detail ; i+=.25) {
+                x = ((x2-x1)*5/8*(Math.cos(i*Math.PI/(2*detail)))+x1)*xRot+xPos;  // x
+                z = -((y2-y1)*5/8*(Math.sin(i*Math.PI/(2*detail)))+y1)*yRot-yPos;  // y
                 y = 7;
+                rot = Math.cos(Math.PI*i);
+                if(i==0 || i == detail){
+                    rot = undefined;
+                }
 
-               tmpArray.push({x:x,y:7,z:z});
-                                                                       // z
+                tmpArray.push({x:x,y:7,z:z,rot:rot});
+
            }
            if(yRot == -1){
                 tmpArray.reverse();         
            }
            way = way.concat(tmpArray);
 
+
+        tmpArray = [];
+        for (var i = 0  ; i <= detail ; i+=.25) {
+                x = ((x2-x1)*7/8*(Math.cos(i*Math.PI/(2*detail)))+x1)*xRot+xPos;  // x
+                z = -((y2-y1)*7/8*(Math.sin(i*Math.PI/(2*detail)))+y1)*yRot-yPos;  // y
+                y = 7;
+                rot = Math.cos(Math.PI*i);
+                if(i==0 || i == detail){
+                    rot = undefined;
+                }
+
+                tmpArray.push({x:x,y:7,z:z,rot:rot});
+
+           }
+
+           if(yRot == -1){
+                tmpArray.reverse();         
+           }
+           way2 = way2.concat(tmpArray);
+
+
+
         for (var i = nbVertice ; i < (detail*2)+nbVertice ; i++) {
             geom.faces.push( new THREE.Face3(i,i+1,i+2));
         };
     }
 
-    function drawCurve(geom,x1,y1,x2,y2,detail,corner){
-        if(corner == 'RT'){
-            xRot = 1;
-            yRot = 1;
-            xPos = 0;
-            yPos = 0;
-        }
-        if(corner == 'LT'){
-            xRot = -1;
-            yRot = 1;
-            xPos = x1+x2;
-            yPos = 0;
-        }
-        if(corner == 'RB'){
-            xRot = 1;
-            yRot = -1;
-            xPos = 0;
-            yPos = y1+y2;
-        }
-        if(corner == 'LB'){
-            xRot = -1;
-            yRot = -1;
-            xPos = x1+x2;
-            yPos = y1+y2;
-        }
-        nbVertice = geom.vertices.length;
-
-        v1 = new THREE.Vector3(x1*xRot+xPos,y1*yRot+yPos,0);
-        v2 = new THREE.Vector3(x1*xRot+xPos,y2*yRot+yPos,0);
-
-        geom.vertices.push(v1);
-        geom.vertices.push(v2);
-
-        for (var i = detail - 1 ; i > 0 ; i--) {
-            vTmp = new THREE.Vector3(
-                ((x2-x1)*(Math.cos(i*Math.PI/(2*detail)))+x1)*xRot+xPos,  // x
-                ((y2-y1)*(Math.sin(i*Math.PI/(2*detail)))+y1)*yRot+yPos,  // y
-                0);                                             // z
-            geom.vertices.push(vTmp);
-        };
-
-        v5 = new THREE.Vector3(x2*xRot+xPos,y1*yRot+yPos,0);
-        geom.vertices.push(v5);
-
-        for (var i = 1 ; i < detail + 1 ; i++) {
-            geom.faces.push( new THREE.Face3(nbVertice,nbVertice+i,nbVertice+i+1));
-        };
-    }
+   
 
 
     function addControlGui(controlObject){
@@ -383,6 +508,7 @@
      * for future renders
      */
     function render() {
+
         var rotSpeed = control.rotationSpeed;
         // camera.position.x = camera.position.x * Math.cos(rotSpeed) + camera.position.z * Math.sin(rotSpeed);
         // camera.position.z = camera.position.z * Math.cos(rotSpeed) - camera.position.x * Math.sin(rotSpeed);
@@ -400,7 +526,11 @@
         requestAnimationFrame(render);
         renderer.render(scene, camera);
         // object.material.color = new THREE.Color(parseInt(getRandomColor()));
-        scene.simulate();   
+        scene.simulate();  
+        if(SPEED != 0){
+            go('way2','dae1');
+            go('way','dae2'); 
+        }
     }
 
 function getRandomColor() {
