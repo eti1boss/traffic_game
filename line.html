@@ -27,13 +27,18 @@
     var spotLight;
     var cameraControl;
     var ambientLight;
-    var object ,cube, line;
+    var object ,cube, line, object2;
     var way = [];
     var way2 = [];
     var pos = 0;
     var obj;
     SPEED=0;
     ROTATION=0;
+    vehicles=[];
+    var nb = 3;
+    var largeurRoute = 20;
+    var geom;
+    var detailAngle = 10;
  
    /**
      * Initializes the scene, camera and objects. Called when the window is
@@ -45,37 +50,22 @@
         scene = new Physijs.Scene;
         scene.setGravity(new THREE.Vector3(0,-100,0));
 
-        var geom = new THREE.Geometry(); 
+        geom = new THREE.Geometry(); 
 
         // console.log(geom.vertices.length);
-        drawRect(geom,0,0,80,20);
-        drawRect(geom,100,-20,120,-60);
-        drawRect(geom,80,-80,0,-100);
-        drawRect(geom,-20,-60,-40,-20);
+        // drawRect(geom,0,0,80,20);
+        // drawRect(geom,100,-20,120,-60);
+        // drawRect(geom,80,-80,0,-100);
+        // drawRect(geom,-20,-60,-40,-20);
 
-
-        for(i=0;i<80;i+=2){
-            way.push({x:i,y:7,z:-5});
-            way2.push({x:i,y:7,z:-15});
-        }
-        drawCurve2(geom,80,20,120,-20,10,'RT');
-        for(i=20;i<60;i+=2){
-            way.push({x:105,y:7,z:i});
-            way2.push({x:115,y:7,z:i});
-        }
-        drawCurve2(geom,120,-60,80,-100,10,'RB');
-        for(i=80;i>0;i-=2){
-            way.push({x:i,y:7,z:85});
-            way2.push({x:i,y:7,z:95});
-        }
-        drawCurve2(geom,0,-100,-40,-60,10,'LB');
-        for(i=60;i>20;i-=2){
-            way.push({x:-25,y:7,z:i});
-            way2.push({x:-35,y:7,z:i});
-        }
-        drawCurve2(geom,-40,-20,0,20,10,'LT');
+        map_rect(0,0,80,40);
 
         way2.reverse();
+
+        // way3 = [];
+        // for (var i =  0; i < way2.length; i++) {
+        //      way3.push({x:way2[i].x+50,y:way2[i].y,z:way2[i].z+50,rot:way2[i].rot,free:true});
+        // };
         
         geom.computeFaceNormals();
 
@@ -87,6 +77,11 @@
         object.rotation.x = Math.PI * -0.5;
 
         scene.add(object);
+
+        // object2 = object.clone();
+        // object2.position.x = 50;
+        // object2.position.z = 50;
+        // scene.add(object2);
 
         addLights();
 
@@ -134,7 +129,7 @@
 
 
         // create a cube
-        var cubeGeometry = new THREE.BoxGeometry(12,12,12);
+        var cubeGeometry = new THREE.BoxGeometry(10,10,10);
 
         var myTexture = THREE.ImageUtils.loadTexture("assets/textures/wood.png");
         var cubeMaterial = new THREE.MeshPhongMaterial({map:myTexture,transparent : true,opacity:1});
@@ -149,21 +144,11 @@
         scene.add(cube);
         // create a cube
 
-        // var cubeMaterial = new THREE.MeshLambertMaterial({color: 'red',transparent : true,opacity:0.5});
-        cube2 = new Physijs.BoxMesh(cubeGeometry,cubeMaterial,100);
-        cube2.castShadow = true;
-        cube2.position.set(0,50,-40);
 
-        // add the cube to the scene
-        // scene.add(cube2);
-
-
-        touareg('dae1',0);
+        cube.name='dae1';
+        // touareg('dae1',0);
         mclaren('dae2',0);
-        // tron('dae3',600);
-        // model(dae3,10);
-        // model(dae4,10);
-        // model(dae5,10);
+
 
         // create a camera, which defines where we're looking at.
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -204,6 +189,91 @@
         // by requestAnimationFrame
         render();
         // console.log(object.mate);
+
+    }
+
+    // Cette fonction a pour but de créer un circuit rectangulaire avec les angles arrondis
+// Plus précisemment, cela créé l'objet 3D et le tableau de coordonnées du chemin des voitures
+function map_rect(x, y, longueurX, longueurY){
+
+    //Création de la forme HAUT
+    x1 = x  + largeurRoute*2;
+    y1 = y  - largeurRoute;
+    x2 = x1 + longueurX
+    y2 = y1 + largeurRoute;
+
+    drawRect(x1,y1,x2,y2);
+
+    //Création de la forme HAUT DROITE
+    x1 = x  + largeurRoute*2+longueurX;
+    y1 = y;
+    x2 = x1 + largeurRoute*2;
+    y2 = y1 - largeurRoute*2;
+
+    drawCurve(x1,y1,x2,y2,'HD');//RT
+
+    //Création de la forme DROITE
+    x1 = x  + largeurRoute*2+longueurX+largeurRoute;
+    y1 = y  - largeurRoute*2;
+    x2 = x  + largeurRoute*2+longueurX+largeurRoute*2;
+    y2 = y  - largeurRoute*2-longueurY;
+
+    drawRect(x1,y1,x2,y2);
+
+    //Création de la forme BAS DROITE
+    x1 = x  + largeurRoute*2+longueurX+largeurRoute*2;
+    y1 = y  - largeurRoute*2-longueurY;
+    x2 = x1 - largeurRoute*2;
+    y2 = y1 - largeurRoute*2;
+
+    drawCurve(x1,y1,x2,y2,'BD');//RB
+
+    //Création de la forme BAS
+    x1 = x  + largeurRoute*2+longueurX;
+    y1 = y  - largeurRoute*2-longueurY-largeurRoute;
+    x2 = x1 - longueurX;
+    y2 = y1 - largeurRoute;
+
+    drawRect(x1,y1,x2,y2);
+
+    //Création de la forme BAS GAUCHE
+    x1 = x + largeurRoute*2;
+    y1 = y - largeurRoute*4-longueurY;
+    x2 = x;
+    y2 = y - largeurRoute*2-longueurY
+
+    drawCurve(x1,y1,x2,y2,'BG');//LB
+    
+    //Création de la forme GAUCHE
+    x1 = x + largeurRoute;
+    y1 = y - largeurRoute*2 - longueurY;
+    x2 = x;
+    y2 = y - largeurRoute*2;
+
+    drawRect(x1,y1,x2,y2);
+    
+    //Création de la forme HAUT GAUCHE
+    x1 = x;
+    y1 = y - largeurRoute*2;
+    x2 = x + largeurRoute*2;
+    y2 = y;
+
+    drawCurve(x1,y1,x2,y2,'HG');//LT
+}
+
+    function addCar(vway,aWay){
+        var obj = scene.getObjectByName('dae1');
+        var obj2 = obj.clone();
+        vname='dae'+nb;
+        nb++;
+        obj2.name=vname;
+        obj2.pos=0;
+        obj2.position.x = aWay[0].x;
+        // obj2.position.y = way2[pos].y-7.1;
+        obj2.position.z = aWay[0].z;
+        obj2.rotation.y = 0;
+        vehicles.push({way:vway,name:vname});
+        scene.add(obj2);
     }
 
     function touareg(name,pos){
@@ -227,7 +297,9 @@
             obj.position.z = way2[pos].z;
             obj.pos=pos;
             obj.name = name;
-            scene.add( obj ); 
+
+            scene.add( obj );
+            vehicles.push({way:'way2',name:name});
         });
 
     }
@@ -253,7 +325,8 @@
             obj.position.z = way[pos].z;
             obj.pos=pos;
             obj.name = name;
-            scene.add( obj ); 
+            scene.add( obj );
+            vehicles.push({way:'way',name:name});
         });
 
     }
@@ -364,6 +437,32 @@
                 obj.pos+=1;
             };
         }
+        if(wayName == 'way3'){
+            for (var i = 0; i < SPEED; i++) {
+
+                if(obj.pos >= way3.length){
+                    obj.pos = 0;
+                }
+
+                obj.position.x = way3[obj.pos].x;
+                obj.position.y = way3[obj.pos].y-7.1;
+                obj.position.z = way3[obj.pos].z;
+
+                if(way3[obj.pos].rot != undefined){
+                    obj.rotation.y+=((Math.PI*.5)/39);
+                }
+                else{
+                    if(obj.rotation.y > 1.5 && obj.rotation.y < 1.6 ) obj.rotation.y = Math.PI* .5;
+                    if(obj.rotation.y > 3.1 && obj.rotation.y < 3.2 ) obj.rotation.y = Math.PI* 1;
+                    if(obj.rotation.y > 4.7 && obj.rotation.y < 4.8 ) obj.rotation.y = Math.PI* 1.5;
+                    if(obj.rotation.y > 6.2 && obj.rotation.y < 6.3 ) obj.rotation.y = Math.PI* 2;
+                }
+                if(obj.rotation.y >= Math.PI*2){
+                    obj.rotation.y=0;
+                }
+                obj.pos+=1;
+            };
+        }
         
 
         // console.log(way[obj.pos].rot);
@@ -371,7 +470,8 @@
 
     }
 
-    function drawRect(geom,x1,y1,x2,y2){
+    function drawRect(x1,y1,x2,y2){
+
         v1 = new THREE.Vector3(x1,y1,0);
         v2 = new THREE.Vector3(x1,y2,0);
         v3 = new THREE.Vector3(x2,y1,0);
@@ -390,62 +490,97 @@
 
         geom.faces.push( new THREE.Face3( i1, i2, i3) );
         geom.faces.push( new THREE.Face3( i2, i3, i4) );
+
+        differenceX = x2 - x1;
+        differenceY = y2 - y1;
+
+
+        if( Math.abs(differenceX) > Math.abs(differenceY) ){
+            if(differenceX > 0){
+                for(i=x1;i<x2;i+=2){
+                    way.push({x:i,y:7,z:(largeurRoute*.75),free:true});
+                    way2.push({x:i,y:7,z:(largeurRoute*.25),free:true});
+                }
+            }
+            else{        
+                for(i=x1;i>x2;i-=2){
+                    way.push({x:i,y:7,z:(y2*-1)-largeurRoute*.75,free:true});
+                    way2.push({x:i,y:7,z:(y2*-1)-largeurRoute*.25,free:true});
+                }
+
+            }
+        }
+        else{
+            if(differenceY > 0){
+                for(i=(y1*-1);i>(y2*-1);i-=2){
+                    way.push({x:x2+(largeurRoute*.75),y:7,z:i,free:true});
+                    way2.push({x:x2+(largeurRoute*.25),y:7,z:i,free:true});
+                }
+
+            }
+            else{
+                for(i=(y1*-1);i<(y2*-1);i+=2){
+                    way.push({x:x2-(largeurRoute*.75),y:7,z:i,free:true});
+                    way2.push({x:x2-(largeurRoute*.25),y:7,z:i,free:true});
+                }
+            }
+        }
     }
 
-    function drawCurve2(geom,x1,y1,x2,y2,detail,corner){
+    function drawCurve(x1,y1,x2,y2,corner){
 
-        if(corner == 'RT'){
+        if(corner == 'HD'){
             xRot = 1;
             yRot = -1;
             xPos = 0;
-            yPos = 0;
+            yPos = y1+y2;
         }
-        if(corner == 'LT'){
+        if(corner == 'BD'){
             xRot = -1;
             yRot = 1;
             xPos = x1+x2;
             yPos = 0;
         }
-        if(corner == 'RB'){
-            xRot = -1;
-            yRot = 1;
-            xPos = x1+x2;
-            yPos = 0;
-        }
-        if(corner == 'LB'){
+        if(corner == 'BG'){
             xRot = 1;
             yRot = -1;
-            xPos = x1;
+            xPos = 0;//x1;
             yPos = y1+y2;
+        }
+        if(corner == 'HG'){
+            xRot = -1;
+            yRot = 1;
+            xPos = x1+x2;
+            yPos = 0;
         }
         nbVertice = geom.vertices.length;
 
-        for (var i = 0  ; i <= detail ; i++) {
+        for (var i = 0  ; i <= detailAngle ; i++) {
             // console.log(i);
             vTmp = new THREE.Vector3(
-                ((x2-x1)/2*(Math.cos(i*Math.PI/(2*detail)))+x1)*xRot+xPos,  // x
-                ((y2-y1)/2*(Math.sin(i*Math.PI/(2*detail)))+y1)*yRot+yPos,  // y
+                ((x2-x1)/2*(Math.cos(i*Math.PI/(2*detailAngle)))+x1)*xRot+xPos,  // x
+                ((y2-y1)/2*(Math.sin(i*Math.PI/(2*detailAngle)))+y1)*yRot+yPos,  // y
                 0);                                                         // z
             geom.vertices.push(vTmp);
             vTmp = new THREE.Vector3(
-                ((x2-x1)*(Math.cos(i*Math.PI/(2*detail)))+x1)*xRot+xPos,  // x
-                ((y2-y1)*(Math.sin(i*Math.PI/(2*detail)))+y1)*yRot+yPos,  // y
+                ((x2-x1)*(Math.cos(i*Math.PI/(2*detailAngle)))+x1)*xRot+xPos,  // x
+                ((y2-y1)*(Math.sin(i*Math.PI/(2*detailAngle)))+y1)*yRot+yPos,  // y
                 0);                                                         // z
             geom.vertices.push(vTmp);
 
         };
 
         tmpArray = [];
-        for (var i = 0  ; i <= detail ; i+=.25) {
-                x = ((x2-x1)*5/8*(Math.cos(i*Math.PI/(2*detail)))+x1)*xRot+xPos;  // x
-                z = -((y2-y1)*5/8*(Math.sin(i*Math.PI/(2*detail)))+y1)*yRot-yPos;  // y
+        for (var i = 0  ; i <= detailAngle ; i+=.25) {
+                x = ((x2-x1)*5/8*(Math.cos(i*Math.PI/(2*detailAngle)))+x1)*xRot+xPos;  // x
+                z = -((y2-y1)*5/8*(Math.sin(i*Math.PI/(2*detailAngle)))+y1)*yRot-yPos;  // y
                 y = 7;
                 rot = Math.cos(Math.PI*i);
-                if(i==0 || i == detail){
+                if(i==0 || i == detailAngle){
                     rot = undefined;
                 }
 
-                tmpArray.push({x:x,y:7,z:z,rot:rot});
+                tmpArray.push({x:x,y:7,z:z,rot:rot,free:true});
 
            }
            if(yRot == -1){
@@ -455,16 +590,16 @@
 
 
         tmpArray = [];
-        for (var i = 0  ; i <= detail ; i+=.25) {
-                x = ((x2-x1)*7/8*(Math.cos(i*Math.PI/(2*detail)))+x1)*xRot+xPos;  // x
-                z = -((y2-y1)*7/8*(Math.sin(i*Math.PI/(2*detail)))+y1)*yRot-yPos;  // y
+        for (var i = 0  ; i <= detailAngle ; i+=.25) {
+                x = ((x2-x1)*7/8*(Math.cos(i*Math.PI/(2*detailAngle)))+x1)*xRot+xPos;  // x
+                z = -((y2-y1)*7/8*(Math.sin(i*Math.PI/(2*detailAngle)))+y1)*yRot-yPos;  // y
                 y = 7;
                 rot = Math.cos(Math.PI*i);
-                if(i==0 || i == detail){
+                if(i==0 || i == detailAngle){
                     rot = undefined;
                 }
 
-                tmpArray.push({x:x,y:7,z:z,rot:rot});
+                tmpArray.push({x:x,y:7,z:z,rot:rot,free:true});
 
            }
 
@@ -475,7 +610,7 @@
 
 
 
-        for (var i = nbVertice ; i < (detail*2)+nbVertice ; i++) {
+        for (var i = nbVertice ; i < (detailAngle*2)+nbVertice ; i++) {
             geom.faces.push( new THREE.Face3(i,i+1,i+2));
         };
     }
@@ -528,8 +663,9 @@
         // object.material.color = new THREE.Color(parseInt(getRandomColor()));
         scene.simulate();  
         if(SPEED != 0){
-            go('way2','dae1');
-            go('way','dae2'); 
+            for(i=0;i<vehicles.length;i++){
+                go(vehicles[i].way,vehicles[i].name);
+            }
         }
     }
 
@@ -561,7 +697,7 @@ function getRandomColor() {
         // ambientLight.name='ambient';
         // scene.add(ambientLight);
 
-        dirLight = new THREE.DirectionalLight(0xff0def,.4);
+        dirLight = new THREE.DirectionalLight(0xf54123,.4);
         dirLight.position.set(0,500,0);
         dirLight.target.position.set(0,0,0);
         scene.add(dirLight);
@@ -597,25 +733,25 @@ function getRandomColor() {
         spotLight.target.position.set(0,0,0);
         scene.add(spotLight);
 
-        spotLight2 = new THREE.SpotLight(0xff0000,.7);
-        spotLight2.position.set(100,50,0);
-        spotLight2.target.position.set(20,0,0);
-        scene.add(spotLight2);
+        // spotLight2 = new THREE.SpotLight(0xff0000,.7);
+        // spotLight2.position.set(100,50,0);
+        // spotLight2.target.position.set(20,0,0);
+        // scene.add(spotLight2);
 
-        spotLight3 = new THREE.SpotLight(0x00ff00,.7);
-        spotLight3.position.set(0,50,100);
-        spotLight3.target.position.set(0,0,20);
-        scene.add(spotLight3);
+        // spotLight3 = new THREE.SpotLight(0x00ff00,.7);
+        // spotLight3.position.set(0,50,100);
+        // spotLight3.target.position.set(0,0,20);
+        // scene.add(spotLight3);
 
-        spotLight4 = new THREE.SpotLight(0x0000ff,.7);
-        spotLight4.position.set(-100,50,-100);
-        spotLight4.target.position.set(-20,0,-20);
-        scene.add(spotLight4);
+        // spotLight4 = new THREE.SpotLight(0x0000ff,.7);
+        // spotLight4.position.set(-100,50,-100);
+        // spotLight4.target.position.set(-20,0,-20);
+        // scene.add(spotLight4);
 
-        spotLight4 = new THREE.SpotLight(0xffff00,.7);
-        spotLight4.position.set(50,50,50);
-        spotLight4.target.position.set(20,0,20);
-        scene.add(spotLight4);
+        // spotLight4 = new THREE.SpotLight(0xffff00,.7);
+        // spotLight4.position.set(50,50,50);
+        // spotLight4.target.position.set(20,0,20);
+        // scene.add(spotLight4);
     }
 </script>
 <body>
