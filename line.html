@@ -3,6 +3,7 @@
 <head>
     <title>01.01 - Basic scene</title>
     <script src="libs/three.js"></script>
+    <script src="libs/jquery.js"></script>
     <script src="libs/dat.gui.min.js"></script>
     <script src="libs/stats.min.js"></script>
     <script src="libs/OrbitControls.js"></script>
@@ -19,7 +20,6 @@
     </style>
 </head>
 <script>
-
     // global variables
     var renderer;
     var scene;
@@ -32,13 +32,17 @@
     var way2 = [];
     var pos = 0;
     var obj;
-    SPEED=0;
+    SPEED=1;
     ROTATION=0;
     vehicles=[];
-    var nb = 3;
+    var nb = 1;
     var largeurRoute = 20;
     var geom;
     var detailAngle = 10;
+    var ways = [], way1 = [], way2 = [], way3 = [], way4 = [], way5 = [], way6 = [];
+    var dots = [];
+    var collidableMeshList = [];
+    var selectedObject, movingCube;
  
    /**
      * Initializes the scene, camera and objects. Called when the window is
@@ -50,38 +54,30 @@
         scene = new Physijs.Scene;
         scene.setGravity(new THREE.Vector3(0,-100,0));
 
-        geom = new THREE.Geometry(); 
-
-        // console.log(geom.vertices.length);
-        // drawRect(geom,0,0,80,20);
-        // drawRect(geom,100,-20,120,-60);
-        // drawRect(geom,80,-80,0,-100);
-        // drawRect(geom,-20,-60,-40,-20);
-
-        map_rect(0,0,80,40);
-
-        way2.reverse();
-
-        // way3 = [];
-        // for (var i =  0; i < way2.length; i++) {
-        //      way3.push({x:way2[i].x+50,y:way2[i].y,z:way2[i].z+50,rot:way2[i].rot,free:true});
-        // };
-        
-        geom.computeFaceNormals();
+        ways = [way1, way2, way3, way4];
 
         var material = Physijs.createMaterial(new THREE.MeshLambertMaterial({color: 0xffffff,side : THREE.DoubleSide}));
 
+        geom = new THREE.Geometry(); 
+        map_rect(0, 0, 40, 40, 0, 1);
+        geom.computeFaceNormals();
         object = new Physijs.BoxMesh( geom, material);
-
         object.position.z = 0;
         object.rotation.x = Math.PI * -0.5;
-
         scene.add(object);
 
-        // object2 = object.clone();
-        // object2.position.x = 50;
-        // object2.position.z = 50;
-        // scene.add(object2);
+        geom = new THREE.Geometry(); 
+        map_rect(40, 40, 40, 40, 2, 3);
+        geom.computeFaceNormals();
+        object2 = new Physijs.BoxMesh( geom, material);
+        object2.position.z = 0;
+        object2.rotation.x = Math.PI * -0.5;
+        scene.add(object2);
+
+
+        ways[1].reverse();
+        ways[3].reverse();
+        
 
         addLights();
 
@@ -101,32 +97,22 @@
 
         scene.add(ground);
 
-        for (var i = 0 ; i < way.length; i++) {
-            var dotGeometry = new THREE.PlaneGeometry(1,1);
-            var dotMaterial = new THREE.MeshLambertMaterial({color:0x000000});
-            var dot = new THREE.Mesh(dotGeometry,dotMaterial);
-            
-            dot.rotation.x = -0.5 * Math.PI;
-            dot.position.x = way[i].x;
-            dot.position.y = way[i].y-6.9;
-            dot.position.z = way[i].z;
+        // for (var j = ways.length - 1; j >= 0; j--) {
 
-            // scene.add(dot);
-        };
+        //     for (var i = 0 ; i < ways[j].length; i++) {
+        //         var dotGeometry = new THREE.PlaneGeometry(1,1);
+        //         var dotMaterial = new THREE.MeshLambertMaterial({color:0x00ff00});
+        //         var dot = new THREE.Mesh(dotGeometry,dotMaterial);
+                
+        //         dot.rotation.x = -0.5 * Math.PI;
+        //         dot.position.x = ways[j][i].x;
+        //         dot.position.y = ways[j][i].y-6.9;
+        //         dot.position.z = ways[j][i].z;
 
-        for (var i = 0 ; i < way2.length; i++) {
-            var dotGeometry = new THREE.PlaneGeometry(1,1);
-            var dotMaterial = new THREE.MeshLambertMaterial({color:0x000000});
-            var dot = new THREE.Mesh(dotGeometry,dotMaterial);
-            
-            dot.rotation.x = -0.5 * Math.PI;
-            dot.position.x = way2[i].x;
-            dot.position.y = way2[i].y-6.9;
-            dot.position.z = way2[i].z;
+        //         scene.add(dot);
+        //     };
 
-            // scene.add(dot);
-        };
-
+        // };
 
         // create a cube
         var cubeGeometry = new THREE.BoxGeometry(10,10,10);
@@ -138,16 +124,20 @@
         cube = new Physijs.BoxMesh(cubeGeometry,cubeMaterial,10);
         cube.castShadow = true;
         cube.name = 'cube';
-        cube.position.set(20,100,-40);
+        cube.position.set(10,100,50);
 
         // add the cube to the scene
         scene.add(cube);
         // create a cube
 
-
         cube.name='dae1';
         // touareg('dae1',0);
-        mclaren('dae2',0);
+        // mclaren('dae2',0);
+
+
+        mclaren = scene.getObjectByName('dae1');
+        //collidableMeshList.push(mclaren);
+        //collidableMeshList.push(cube);
 
 
         // create a camera, which defines where we're looking at.
@@ -173,10 +163,6 @@
             this.color = 0xb12929;
         };
 
-        sphereTexture = THREE.ImageUtils.loadTexture("assets/textures/planets/mercurymap.jpg");
-        sphereMaterial = new THREE.MeshPhongMaterial({map:sphereTexture,transparent:false,opacity:1});
-        SphereGeometry = new THREE.SphereGeometry(1,60,60);
-        // addSphere(800);
 
         // add extra
         addControlGui(control);
@@ -185,16 +171,28 @@
         // add the output of the renderer to the html element
         document.body.appendChild(renderer.domElement);
 
-        // call the render function, after the first render, interval is determined
-        // by requestAnimationFrame
         render();
-        // console.log(object.mate);
 
     }
 
+function detectedCollision(objet, directionVector){
+    //console.log(directionVector);
+    for(var vertexIndex = 0; vertexIndex < objet.geometry.vertices.length;vertexIndex++){
+        var localVertex = objet.geometry.vertices[vertexIndex].clone();
+        var globalVertex = localVertex.applyMatrix4(objet.matrix);
+
+        var ray = new THREE.Raycaster(globalVertex, directionVector.clone().normalize());
+        var collisionResults = ray.intersectObjects(collidableMeshList);
+        if(collisionResults.length > 0 && collisionResults[0].distance < directionVector.length())
+            return true;
+    }
+    return false;
+}
+
+
     // Cette fonction a pour but de créer un circuit rectangulaire avec les angles arrondis
 // Plus précisemment, cela créé l'objet 3D et le tableau de coordonnées du chemin des voitures
-function map_rect(x, y, longueurX, longueurY){
+function map_rect(x, y, longueurX, longueurY, idWay1, idWay2){
 
     //Création de la forme HAUT
     x1 = x  + largeurRoute*2;
@@ -202,7 +200,7 @@ function map_rect(x, y, longueurX, longueurY){
     x2 = x1 + longueurX
     y2 = y1 + largeurRoute;
 
-    drawRect(x1,y1,x2,y2);
+    drawRect(x1,y1,x2,y2, idWay1, idWay2);
 
     //Création de la forme HAUT DROITE
     x1 = x  + largeurRoute*2+longueurX;
@@ -210,7 +208,7 @@ function map_rect(x, y, longueurX, longueurY){
     x2 = x1 + largeurRoute*2;
     y2 = y1 - largeurRoute*2;
 
-    drawCurve(x1,y1,x2,y2,'HD');//RT
+    drawCurve(x1,y1,x2,y2,'HD', idWay1, idWay2);//RT
 
     //Création de la forme DROITE
     x1 = x  + largeurRoute*2+longueurX+largeurRoute;
@@ -218,7 +216,7 @@ function map_rect(x, y, longueurX, longueurY){
     x2 = x  + largeurRoute*2+longueurX+largeurRoute*2;
     y2 = y  - largeurRoute*2-longueurY;
 
-    drawRect(x1,y1,x2,y2);
+    drawRect(x1,y1,x2,y2, idWay1, idWay2);
 
     //Création de la forme BAS DROITE
     x1 = x  + largeurRoute*2+longueurX+largeurRoute*2;
@@ -226,7 +224,7 @@ function map_rect(x, y, longueurX, longueurY){
     x2 = x1 - largeurRoute*2;
     y2 = y1 - largeurRoute*2;
 
-    drawCurve(x1,y1,x2,y2,'BD');//RB
+    drawCurve(x1,y1,x2,y2,'BD', idWay1, idWay2);//RB
 
     //Création de la forme BAS
     x1 = x  + largeurRoute*2+longueurX;
@@ -234,7 +232,7 @@ function map_rect(x, y, longueurX, longueurY){
     x2 = x1 - longueurX;
     y2 = y1 - largeurRoute;
 
-    drawRect(x1,y1,x2,y2);
+    drawRect(x1,y1,x2,y2, idWay1, idWay2);
 
     //Création de la forme BAS GAUCHE
     x1 = x + largeurRoute*2;
@@ -242,7 +240,7 @@ function map_rect(x, y, longueurX, longueurY){
     x2 = x;
     y2 = y - largeurRoute*2-longueurY
 
-    drawCurve(x1,y1,x2,y2,'BG');//LB
+    drawCurve(x1,y1,x2,y2,'BG', idWay1, idWay2);//LB
     
     //Création de la forme GAUCHE
     x1 = x + largeurRoute;
@@ -250,7 +248,7 @@ function map_rect(x, y, longueurX, longueurY){
     x2 = x;
     y2 = y - largeurRoute*2;
 
-    drawRect(x1,y1,x2,y2);
+    drawRect(x1,y1,x2,y2, idWay1, idWay2);
     
     //Création de la forme HAUT GAUCHE
     x1 = x;
@@ -258,22 +256,43 @@ function map_rect(x, y, longueurX, longueurY){
     x2 = x + largeurRoute*2;
     y2 = y;
 
-    drawCurve(x1,y1,x2,y2,'HG');//LT
+    drawCurve(x1,y1,x2,y2,'HG', idWay1, idWay2);//LT
 }
 
-    function addCar(vway,aWay){
+    function addPlayer(idWay){
+
         var obj = scene.getObjectByName('dae1');
         var obj2 = obj.clone();
-        vname='dae'+nb;
+        vname='player'+nb;
         nb++;
         obj2.name=vname;
+        obj2.speed = 0;
         obj2.pos=0;
-        obj2.position.x = aWay[0].x;
+        obj2.position.x = ways[idWay][0].x;
         // obj2.position.y = way2[pos].y-7.1;
-        obj2.position.z = aWay[0].z;
+        obj2.position.z = ways[idWay][0].z;
         obj2.rotation.y = 0;
-        vehicles.push({way:vway,name:vname});
+        vehicles.push({way:idWay,name:vname});
         scene.add(obj2);
+        collidableMeshList.push(obj2);
+        selectedObject=obj2;
+    }
+
+    function addMovingCube(idWay){
+        var obj = scene.getObjectByName('dae1');
+        var movingCube = obj.clone();
+        vname='dae'+nb;
+        nb++;
+        movingCube.name=vname;
+        movingCube.pos=0;
+        movingCube.position.x = ways[idWay][0].x;
+        // obj2.position.y = way2[pos].y-7.1;
+        movingCube.position.z = ways[idWay][0].z;
+        movingCube.rotation.y = 0;
+        vehicles.push({way:idWay,name:vname});
+        scene.add(movingCube);
+        collidableMeshList.push(movingCube);
+        selectedObject=movingCube;
     }
 
     function touareg(name,pos){
@@ -299,7 +318,7 @@ function map_rect(x, y, longueurX, longueurY){
             obj.name = name;
 
             scene.add( obj );
-            vehicles.push({way:'way2',name:name});
+            vehicles.push({way:2,name:name});
         });
 
     }
@@ -320,157 +339,156 @@ function map_rect(x, y, longueurX, longueurY){
             obj.receiveShadow = true;
             obj.rotation.y = Math.PI * .5;
 
-            obj.position.x = way[pos].x;
-            obj.position.y = way[pos].y-7.1;
-            obj.position.z = way[pos].z;
+            obj.position.x = way1[pos].x;
+            obj.position.y = way1[pos].y-7.1;
+            obj.position.z = way1[pos].z;
             obj.pos=pos;
             obj.name = name;
             scene.add( obj );
-            vehicles.push({way:'way',name:name});
+            // vehicles.push({way:0,name:name});
         });
 
     }
 
-        function addSphere(nb){
-        for (var i = 0 ; i < nb; i++) {
-            var tmpSphere = new Physijs.BoxMesh(SphereGeometry,sphereMaterial);
-
-            var num = Math.floor(Math.random()*100) + 1;
-            num *= Math.floor(Math.random()*2) == 1 ? 1 : -1;
-            x=num;
-
-            var num = Math.floor(Math.random()*30) + 10;
-            // num *= Math.floor(Math.random()*2) == 1 ? 1 : -1;
-            y=num;
-
-            var num = Math.floor(Math.random()*100) + 1;
-            num *= Math.floor(Math.random()*2) == 1 ? 1 : -1;
-            z=num;
-            tmpSphere.position.set(x,y,z);
-            scene.add(tmpSphere);
-        };
-    }
-
     window.onkeydown = checkKey;
+
+    var engineOnP1, engineOffP1, engineOnP2, engineOffP2;
+
+function engine(player,type) {
+    if(player == 1){
+        speedP1 = scene.getObjectByName('player1').speed;
+        if(type==1){
+            if(speedP1 >= 2 ) {
+                clearInterval(engineOnP1);
+                speedP1 = 2;
+            } else {
+                speedP1 += .1 ;
+            }
+        } else {
+            if(speedP1 <= 0 ) {
+                clearInterval(engineOffP1);
+                speedP1 = 0;
+            } else {
+                speedP1 -= .5 ;
+            }   
+        }
+        scene.getObjectByName('player1').speed = speedP1;
+        $("#player1").text("SPEED : " + speedP1);
+    }
+    if(player == 2){
+        speedP2 = scene.getObjectByName('player2').speed;
+        if(type==1){
+            if(speedP2 >= 2 ) {
+                clearInterval(engineOnP2);
+                speedP2 = 2;
+            } else {
+                speedP2 += .1 ;
+            }
+        } else {
+            if(speedP2 <= 0 ) {
+                clearInterval(engineOffP2);
+                speedP2 = 0;
+            } else {
+                speedP2 -= .5 ;
+            }   
+        }
+        scene.getObjectByName('player2').speed = speedP2;
+    $("#player2").text("SPEED : " + speedP2);
+    }
+}
     
     function checkKey(e){
         e = e || window.event;
 
-        var factor = 0.3;
-
-        if(e.keyCode == '81'){//left
+        if(e.keyCode == '90'){//Z
+            clearInterval(engineOffP1);
+            engineOnP1 = setInterval(function(){engine(1,1)},200);
         }
-        if(e.keyCode == '90'){//go
-            for (var i = 0; i <= 1; i+=.5) {
-                SPEED=i;
-            };
-            // SPEED=1;
-            // go('way2','dae1');
+        if(e.keyCode == '83'){//S
+            clearInterval(engineOnP1);
+            engineOffP1 = setInterval(function(){engine(1,0)},200);
         }
-        if(e.keyCode == '68'){//right          
-        }
-        if(e.keyCode == '83'){//back
-            for (var i = 1; i >= 0; i-=.5) {
-                SPEED=i;
-            };
-        }
-        if(e.keyCode == '65'){//up
-        }
-        if(e.keyCode == '69'){//down
+        if(e.keyCode == '65'){//S
+            clearInterval(engineOnP2);
+            myVar2 = setInterval(function(){engine(2,0)},200);
         }
 
-        // e.preventDefault();
+        if(e.keyCode == '79'){//O
+            clearInterval(engineOffP2);
+            engineOnP2 = setInterval(function(){engine(2,1)},200);
+        }
+        if(e.keyCode == '76'){//L
+            clearInterval(engineOnP2);
+            engineOffP2 = setInterval(function(){engine(2,0)},200);
+        }
+        if(e.keyCode == '80'){//P
+            clearInterval(engineOnP1);
+            engineOffP2 = setInterval(function(){engine(1,0)},200);
+        }
+
     }
 
-    function go(wayName,name){
+    function go(wayID,name){
         var obj = scene.getObjectByName(name);
 
-        if(wayName == 'way'){
-            for (var i = 0; i < SPEED; i++) {
+        // console.log("speed : " + obj.speed);
 
-                if(obj.pos >= way.length){
-                    obj.pos = 0;
-                }
+        if(name=='dae3'){
+            inc=0;
+        } else {
+            inc = 0; //pour faire varier la vitesse en fonction des objets
+        }
 
-                obj.position.x = way[obj.pos].x;
-                obj.position.y = way[obj.pos].y-7.1;
-                obj.position.z = way[obj.pos].z;
+        for (var i = 0; i < obj.speed+inc; i++) {
+            // console.log(obj.pos);
 
-                if(way[obj.pos].rot != undefined){
+            if(obj.pos >= ways[wayID].length){
+                obj.pos = 0;
+            }
+
+            // if(!selectedObject){
+            //   selectedObject= movingCube;
+            // } 
+
+            var direction = new THREE.Vector3(
+                ways[wayID][obj.pos].x,
+                ways[wayID][obj.pos].y-7.1,
+                ways[wayID][obj.pos].z
+                );
+
+            // if(detectedCollision(selectedObject,direction)){
+            //     console.log("COLLISION : " + selectedObject.name);
+            //     SPEED=0;
+            //     direction.y=10;
+            // }
+            
+            obj.position.x = direction.x;
+            obj.position.y = direction.y;
+            obj.position.z = direction.z;
+
+            if(ways[wayID][obj.pos].rot != undefined){
+                if(wayID%2 == 0){
                     obj.rotation.y-=((Math.PI*.5)/39);
                 }
                 else{
-                    if(-obj.rotation.y > 1.5 && -obj.rotation.y < 1.6 ) obj.rotation.y = -Math.PI* .5;
-                    if(-obj.rotation.y > 3.1 && -obj.rotation.y < 3.2 ) obj.rotation.y = -Math.PI* 1;
-                    if(-obj.rotation.y > 4.7 && -obj.rotation.y < 4.8 ) obj.rotation.y = -Math.PI* 1.5;
-                    if(-obj.rotation.y > 6.2 && -obj.rotation.y < 6.3 ) obj.rotation.y = -Math.PI* 2;
-                }       
-                if(obj.rotation.y <= -Math.PI*2){
-                    obj.rotation.y=0;
+                    obj.rotation.y+=((Math.PI*.5)/39);   
                 }
-                obj.pos+=1;
-            };
-        }
-        if(wayName == 'way2'){
-            for (var i = 0; i < SPEED; i++) {
-
-                if(obj.pos >= way2.length){
-                    obj.pos = 0;
-                }
-
-                obj.position.x = way2[obj.pos].x;
-                obj.position.y = way2[obj.pos].y-7.1;
-                obj.position.z = way2[obj.pos].z;
-
-                if(way2[obj.pos].rot != undefined){
-                    obj.rotation.y+=((Math.PI*.5)/39);
-                }
-                else{
-                    if(obj.rotation.y > 1.5 && obj.rotation.y < 1.6 ) obj.rotation.y = Math.PI* .5;
-                    if(obj.rotation.y > 3.1 && obj.rotation.y < 3.2 ) obj.rotation.y = Math.PI* 1;
-                    if(obj.rotation.y > 4.7 && obj.rotation.y < 4.8 ) obj.rotation.y = Math.PI* 1.5;
-                    if(obj.rotation.y > 6.2 && obj.rotation.y < 6.3 ) obj.rotation.y = Math.PI* 2;
-                }
-                if(obj.rotation.y >= Math.PI*2){
-                    obj.rotation.y=0;
-                }
-                obj.pos+=1;
-            };
-        }
-        if(wayName == 'way3'){
-            for (var i = 0; i < SPEED; i++) {
-
-                if(obj.pos >= way3.length){
-                    obj.pos = 0;
-                }
-
-                obj.position.x = way3[obj.pos].x;
-                obj.position.y = way3[obj.pos].y-7.1;
-                obj.position.z = way3[obj.pos].z;
-
-                if(way3[obj.pos].rot != undefined){
-                    obj.rotation.y+=((Math.PI*.5)/39);
-                }
-                else{
-                    if(obj.rotation.y > 1.5 && obj.rotation.y < 1.6 ) obj.rotation.y = Math.PI* .5;
-                    if(obj.rotation.y > 3.1 && obj.rotation.y < 3.2 ) obj.rotation.y = Math.PI* 1;
-                    if(obj.rotation.y > 4.7 && obj.rotation.y < 4.8 ) obj.rotation.y = Math.PI* 1.5;
-                    if(obj.rotation.y > 6.2 && obj.rotation.y < 6.3 ) obj.rotation.y = Math.PI* 2;
-                }
-                if(obj.rotation.y >= Math.PI*2){
-                    obj.rotation.y=0;
-                }
-                obj.pos+=1;
-            };
-        }
+            }
+            else{
+                if(-obj.rotation.y > 1.5 && -obj.rotation.y < 1.6 ) obj.rotation.y = -Math.PI* .5;
+                if(-obj.rotation.y > 3.1 && -obj.rotation.y < 3.2 ) obj.rotation.y = -Math.PI* 1;
+                if(-obj.rotation.y > 4.7 && -obj.rotation.y < 4.8 ) obj.rotation.y = -Math.PI* 1.5;
+                if(-obj.rotation.y > 6.2 && -obj.rotation.y < 6.3 ) obj.rotation.y = -Math.PI* 2;
+            }       
+            if(obj.rotation.y <= -Math.PI*2){
+                obj.rotation.y=0;
+            }
+            obj.pos+=1;
+        };
         
-
-        // console.log(way[obj.pos].rot);
-
-
     }
 
-    function drawRect(x1,y1,x2,y2){
+    function drawRect(x1, y1, x2, y2, idWay1, idWay2){
 
         v1 = new THREE.Vector3(x1,y1,0);
         v2 = new THREE.Vector3(x1,y2,0);
@@ -498,14 +516,14 @@ function map_rect(x, y, longueurX, longueurY){
         if( Math.abs(differenceX) > Math.abs(differenceY) ){
             if(differenceX > 0){
                 for(i=x1;i<x2;i+=2){
-                    way.push({x:i,y:7,z:(largeurRoute*.75),free:true});
-                    way2.push({x:i,y:7,z:(largeurRoute*.25),free:true});
+                    ways[idWay1].push({x:i,y:7,z:(y2*-1)+(largeurRoute*.5),free:true});//75
+                    ways[idWay2].push({x:i,y:7,z:(y2*-1)+(largeurRoute*.5),free:true});//25
                 }
             }
             else{        
                 for(i=x1;i>x2;i-=2){
-                    way.push({x:i,y:7,z:(y2*-1)-largeurRoute*.75,free:true});
-                    way2.push({x:i,y:7,z:(y2*-1)-largeurRoute*.25,free:true});
+                    ways[idWay1].push({x:i,y:7,z:(y2*-1)-largeurRoute*.5,free:true});
+                    ways[idWay2].push({x:i,y:7,z:(y2*-1)-largeurRoute*.5,free:true});
                 }
 
             }
@@ -513,21 +531,22 @@ function map_rect(x, y, longueurX, longueurY){
         else{
             if(differenceY > 0){
                 for(i=(y1*-1);i>(y2*-1);i-=2){
-                    way.push({x:x2+(largeurRoute*.75),y:7,z:i,free:true});
-                    way2.push({x:x2+(largeurRoute*.25),y:7,z:i,free:true});
+                    ways[idWay1].push({x:x2+(largeurRoute*.5),y:7,z:i,free:true});
+                    ways[idWay2].push({x:x2+(largeurRoute*.5),y:7,z:i,free:true});
                 }
 
             }
             else{
                 for(i=(y1*-1);i<(y2*-1);i+=2){
-                    way.push({x:x2-(largeurRoute*.75),y:7,z:i,free:true});
-                    way2.push({x:x2-(largeurRoute*.25),y:7,z:i,free:true});
+                    ways[idWay1].push({x:x2-(largeurRoute*.5),y:7,z:i,free:true});
+                    ways[idWay2].push({x:x2-(largeurRoute*.5),y:7,z:i,free:true});
                 }
             }
         }
+        // ways[idWay2].reverse();
     }
 
-    function drawCurve(x1,y1,x2,y2,corner){
+    function drawCurve(x1,y1,x2,y2,corner, idWay1, idWay2){
 
         if(corner == 'HD'){
             xRot = 1;
@@ -572,8 +591,8 @@ function map_rect(x, y, longueurX, longueurY){
 
         tmpArray = [];
         for (var i = 0  ; i <= detailAngle ; i+=.25) {
-                x = ((x2-x1)*5/8*(Math.cos(i*Math.PI/(2*detailAngle)))+x1)*xRot+xPos;  // x
-                z = -((y2-y1)*5/8*(Math.sin(i*Math.PI/(2*detailAngle)))+y1)*yRot-yPos;  // y
+                x = ((x2-x1)*.75/*5/8*/*(Math.cos(i*Math.PI/(2*detailAngle)))+x1)*xRot+xPos;  // x
+                z = -((y2-y1)*.75/*5/8*/*(Math.sin(i*Math.PI/(2*detailAngle)))+y1)*yRot-yPos;  // y
                 y = 7;
                 rot = Math.cos(Math.PI*i);
                 if(i==0 || i == detailAngle){
@@ -586,13 +605,14 @@ function map_rect(x, y, longueurX, longueurY){
            if(yRot == -1){
                 tmpArray.reverse();         
            }
-           way = way.concat(tmpArray);
-
+           // console.log(ways[idWay1].length);
+           ways[idWay1] = ways[idWay1].concat(tmpArray);
+           // console.log(ways[idWay1].length);
 
         tmpArray = [];
         for (var i = 0  ; i <= detailAngle ; i+=.25) {
-                x = ((x2-x1)*7/8*(Math.cos(i*Math.PI/(2*detailAngle)))+x1)*xRot+xPos;  // x
-                z = -((y2-y1)*7/8*(Math.sin(i*Math.PI/(2*detailAngle)))+y1)*yRot-yPos;  // y
+                x = ((x2-x1)*.75/*7/8*/*(Math.cos(i*Math.PI/(2*detailAngle)))+x1)*xRot+xPos;  // x
+                z = -((y2-y1)*.75/*7/8*/*(Math.sin(i*Math.PI/(2*detailAngle)))+y1)*yRot-yPos;  // y
                 y = 7;
                 rot = Math.cos(Math.PI*i);
                 if(i==0 || i == detailAngle){
@@ -606,7 +626,7 @@ function map_rect(x, y, longueurX, longueurY){
            if(yRot == -1){
                 tmpArray.reverse();         
            }
-           way2 = way2.concat(tmpArray);
+           ways[idWay2] = ways[idWay2].concat(tmpArray);
 
 
 
@@ -753,7 +773,14 @@ function getRandomColor() {
         // spotLight4.target.position.set(20,0,20);
         // scene.add(spotLight4);
     }
+
+
 </script>
 <body>
+<div id="player1" style="color:white;z-index:10;position:absolute;top:200px;left:250px">SPEED : </div>
+<div id="player2" style="color:white;z-index:10;position:absolute;top:200px;right:250px">SPEED : </div>
 </body>
+
+
+
 </html>
