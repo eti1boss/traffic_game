@@ -11,6 +11,7 @@
     <script src="physi.js"></script>
     <script src="physijs_worker.js"></script>
     <script src="ammo.js"></script>
+    <script src="mapBuilder.js"></script>
     <style>
         body {
             /* set margin to 0 and overflow to hidden, to go fullscreen */
@@ -44,7 +45,7 @@
     var collidableMeshList = [];
     var selectedObject, movingCube;
     var dist1, dist2;
- 
+    var fires;
    /**
      * Initializes the scene, camera and objects. Called when the window is
      * loaded by using window.onload (see below)
@@ -55,8 +56,26 @@
         scene = new Physijs.Scene;
         scene.setGravity(new THREE.Vector3(0,-100,0));
 
-        ways = [way1, way2, way3, way4];
+        ways = [[], [], [], []];
 
+        fires = [];
+
+        fires["player1"] = [];
+        fires["player2"] = [];
+
+        fires["player1"].push({pos:210, state:"orange"});
+        fires["player1"].push({pos:310, state:"green"});
+        fires["player1"].push({pos:410, state:"green"});
+        // fires["player1"].push({pos:510, state:"green"});
+        // fires["player1"].push({pos:610, state:"green"});
+        // fires["player1"].push({pos:660, state:"green"});
+
+        // fires["player2"].push({pos:110, state:"green"});
+        // fires["player2"].push({pos:210, state:"green"});
+        // fires["player2"].push({pos:310, state:"green"});
+        // fires["player2"].push({pos:410, state:"green"});
+        // fires["player2"].push({pos:510, state:"green"});
+        // fires["player2"].push({pos:610, state:"green"});
 
         // geom = new THREE.Geometry(); 
         // map_rect(0, 0, 40, 40, 0, 1);
@@ -211,172 +230,6 @@ function detectedCollision(objet, directionVector){
     return false;
 }
 
-function map_custom1(idWay1, idWay2){
-
-    drawRect(   0   ,   -20   ,   40  ,   0 , idWay1, idWay2);
-    drawCurve(  40  ,   0   ,   80  ,   -40 , 'HD', 1,  idWay1, idWay2);
-    drawRect(   60  ,   -40 ,   80  ,   -80 , idWay1, idWay2);
-    drawCurve(  100  ,   -120 ,   60 ,   -80, 'BG', -1, idWay1, idWay2);
-    drawRect(   100 ,   -120,   180 ,   -100, idWay1, idWay2);
-    drawCurve(  220 ,   -80, 180 ,   -120 , 'BD', -1, idWay1, idWay2);
-    drawRect(   220 ,   -80 ,   200 ,   -40 , idWay1, idWay2);
-    drawCurve(  180 ,   0 , 220 ,   -40     , 'HD', -1, idWay1, idWay2);
-    drawCurve(  140 ,   -40 , 180 ,   0   ,    'HG', -1, idWay1, idWay2);
-    drawRect(   140 ,   -40 ,   160 ,   -120, idWay1, idWay2);
-    drawCurve(  160 ,   -120,   120 ,   -160, 'BD', 1, idWay1, idWay2);
-    drawCurve(  80  ,   -180, 120 ,   -140,    'HG', -1, idWay1, idWay2);
-    drawRect(   80  ,   -180,   100 ,   -200, idWay1, idWay2);
-    drawCurve(  100 ,   -200,   60  ,   -240, 'BD', 1, idWay1, idWay2);
-    drawRect(   60  ,   -220,   0   ,   -240, idWay1, idWay2);
-    drawCurve(  0   ,   -240,   -40 ,   -200, 'BG', 1, idWay1, idWay2);
-    drawRect(   -20 ,   -200,   -40 ,   -40 , idWay1, idWay2);
-    drawCurve(  -40 ,   -40 ,   0   ,   0   , 'HG', 1, idWay1, idWay2);
-
-}
-
-function map_custom2(idWay1, idWay2){
-
-    drawRect(   -100    , -60   , 260   , -40   , idWay1, idWay2);
-    drawCurve(  260     , -40   , 300   , -80   , 'HD', 1, idWay1, idWay2);
-    drawCurve(  300     , -80   , 260   , -120  , 'BD', 1, idWay1, idWay2);
-    drawCurve(  220     , -140  , 260   , -100  , 'HG', -1, idWay1, idWay2);
-    drawRect(   220     , -140  , 240   , -200  , idWay1, idWay2);
-    drawCurve(  260     , -240  , 220   , -200  , 'BG', -1, idWay1, idWay2);
-    drawCurve(  300     , -200  , 260   , -240  , 'BD', -1, idWay1, idWay2);
-    drawCurve(  260     , -160   , 300   , -200   , 'HD', -1, idWay1, idWay2);
-    drawRect(   260     , -160  , 140   , -180   , idWay1, idWay2);
-    drawCurve(  100     , -200  , 140   , -160  , 'HG', -1, idWay1, idWay2);
-    drawRect(   100     , -200  , 120   , -220   , idWay1, idWay2);
-    drawCurve(  120     , -220  , 80    , -260  , 'BD', 1, idWay1, idWay2);
-    drawCurve(  80      , -260  , 40    , -220  , 'BG', 1, idWay1, idWay2);
-    drawRect(   60      , -220  , 40    , -180  , idWay1, idWay2);
-    drawCurve(  20      , -140  , 60    , -180  , 'HD', -1, idWay1, idWay2);
-    drawRect(   20      , -140  , -100  , -160  , idWay1, idWay2);
-    drawCurve(  -100    , -160  , -140  , -120  , 'BG', 1, idWay1, idWay2);
-    drawRect(   -120    , -120  , -140  , -80   , idWay1, idWay2);
-    drawCurve(  -140    , -80   , -100  , -40   , 'HG', 1, idWay1, idWay2);
-
-}
-
-
-    // Cette fonction a pour but de créer un circuit rectangulaire avec les angles arrondis
-// Plus précisemment, cela créé l'objet 3D et le tableau de coordonnées du chemin des voitures
-function map_rect(x, y, longueurX, longueurY, idWay1, idWay2){
-
-    console.log("x : " + x + " " + "y : " + y + " " + "longueurX : " + longueurX + " " + "longueurY : " + longueurY);
-
-    //Création de la forme HAUT
-    x1 = x  + largeurRoute*2;
-    y1 = y  - largeurRoute;
-    x2 = x1 + longueurX
-    y2 = y1 + largeurRoute;
-
-    console.log("HAUT");
-    console.log("\t" + "x1 : " + x1)
-    console.log("\t" + "y1 : " + y1)
-    console.log("\t" + "x2 : " + x2)
-    console.log("\t" + "y2 : " + y2)
-
-    drawRect(x1,y1,x2,y2, idWay1, idWay2);
-
-    //Création de la forme HAUT DROITE
-    x1 = x  + largeurRoute*2+longueurX;
-    y1 = y;
-    x2 = x1 + largeurRoute*2;
-    y2 = y1 - largeurRoute*2;
-
-    console.log("HAUT DROIT");
-    console.log("\t" + "x1 : " + x1)
-    console.log("\t" + "y1 : " + y1)
-    console.log("\t" + "x2 : " + x2)
-    console.log("\t" + "y2 : " + y2)
-
-    drawCurve(x1,y1,x2,y2,'HD', idWay1, idWay2);//RT
-
-    //Création de la forme DROITE
-    x1 = x  + largeurRoute*2+longueurX+largeurRoute;
-    y1 = y  - largeurRoute*2;
-    x2 = x  + largeurRoute*2+longueurX+largeurRoute*2;
-    y2 = y  - largeurRoute*2-longueurY;
-
-    console.log("DROIT");
-    console.log("\t" + "x1 : " + x1)
-    console.log("\t" + "y1 : " + y1)
-    console.log("\t" + "x2 : " + x2)
-    console.log("\t" + "y2 : " + y2)
-
-    drawRect(x1,y1,x2,y2, idWay1, idWay2);
-
-    //Création de la forme BAS DROITE
-    x1 = x  + largeurRoute*2+longueurX+largeurRoute*2;
-    y1 = y  - largeurRoute*2-longueurY;
-    x2 = x1 - largeurRoute*2;
-    y2 = y1 - largeurRoute*2;
-
-    console.log("BAS DROITE");
-    console.log("\t" + "x1 : " + x1)
-    console.log("\t" + "y1 : " + y1)
-    console.log("\t" + "x2 : " + x2)
-    console.log("\t" + "y2 : " + y2)
-
-    drawCurve(x1,y1,x2,y2,'BD', idWay1, idWay2);//RB
-
-    //Création de la forme BAS
-    x1 = x  + largeurRoute*2+longueurX;
-    y1 = y  - largeurRoute*2-longueurY-largeurRoute;
-    x2 = x1 - longueurX;
-    y2 = y1 - largeurRoute;
-
-    console.log("BAS");
-    console.log("\t" + "x1 : " + x1)
-    console.log("\t" + "y1 : " + y1)
-    console.log("\t" + "x2 : " + x2)
-    console.log("\t" + "y2 : " + y2)
-
-    drawRect(x1,y1,x2,y2, idWay1, idWay2);
-
-    //Création de la forme BAS GAUCHE
-    x1 = x + largeurRoute*2;
-    y1 = y - largeurRoute*4-longueurY;
-    x2 = x;
-    y2 = y - largeurRoute*2-longueurY
-
-    console.log("BAS GAUCHE");
-    console.log("\t" + "x1 : " + x1)
-    console.log("\t" + "y1 : " + y1)
-    console.log("\t" + "x2 : " + x2)
-    console.log("\t" + "y2 : " + y2)
-
-    drawCurve(x1,y1,x2,y2,'BG', idWay1, idWay2);//LB
-    
-    //Création de la forme GAUCHE
-    x1 = x + largeurRoute;
-    y1 = y - largeurRoute*2 - longueurY;
-    x2 = x;
-    y2 = y - largeurRoute*2;
-
-    console.log("GAUCHE");
-    console.log("\t" + "x1 : " + x1)
-    console.log("\t" + "y1 : " + y1)
-    console.log("\t" + "x2 : " + x2)
-    console.log("\t" + "y2 : " + y2)
-
-    drawRect(x1,y1,x2,y2, idWay1, idWay2);
-    
-    //Création de la forme HAUT GAUCHE
-    x1 = x;
-    y1 = y - largeurRoute*2;
-    x2 = x + largeurRoute*2;
-    y2 = y;
-
-    console.log("HAUT GAUCHE");
-    console.log("\t" + "x1 : " + x1)
-    console.log("\t" + "y1 : " + y1)
-    console.log("\t" + "x2 : " + x2)
-    console.log("\t" + "y2 : " + y2)
-
-    drawCurve(x1,y1,x2,y2,'HG', idWay1, idWay2);//LT
-}
 
     function addPlayer(idWay){
 
@@ -493,7 +346,7 @@ function engine(player,type) {
             }   
         }
         scene.getObjectByName('player1').speed = speedP1;
-        $("#player1").text("SPEED : " + speedP1);
+        $("#player1").text("SPEED : " + Math.floor(speedP1*50));
     }
     if(player == 2){
         speedP2 = scene.getObjectByName('player2').speed;
@@ -513,7 +366,7 @@ function engine(player,type) {
             }   
         }
         scene.getObjectByName('player2').speed = speedP2;
-    $("#player2").text("SPEED : " + speedP2);
+    $("#player2").text("SPEED : " + Math.floor(speedP2*50));
     }
 }
     
@@ -521,11 +374,13 @@ function engine(player,type) {
         e = e || window.event;
 
         if(e.keyCode == '90'){//Z
+            clearInterval(engineOnP1);
             clearInterval(engineOffP1);
             engineOnP1 = setInterval(function(){engine(1,1)},200);
         }
         if(e.keyCode == '83'){//S
             clearInterval(engineOnP1);
+            clearInterval(engineOffP1);
             engineOffP1 = setInterval(function(){engine(1,0)},200);
         }
         if(e.keyCode == '65'){//S
@@ -551,13 +406,31 @@ function engine(player,type) {
     function go(wayID,name){
         var obj = scene.getObjectByName(name);
 
-        // console.log("speed : " + obj.speed);
 
         if(name=='dae3'){
             inc=0;
         } else {
             inc = 0; //pour faire varier la vitesse en fonction des objets
         }
+
+        for (var i = fires[name].length - 1; i >= 0; i--) {
+            if( obj.pos >= fires[name][i].pos && obj.pos <= fires[name][i].pos+10){
+                console.log("ok");
+                if( fires[name][i].state == "orange" ) {
+                    clearInterval(engineOnP1);
+                    console.log("ORANGE");
+                    obj.speed = 0;
+                    // obj.pos--;
+                }
+                else if( fires[name][i].state == "red" ) {
+                    clearInterval(engineOnP1);
+                    console.log("ROUGE");
+                    obj.speed = 0;
+                    // obj.pos--;
+                }
+                else { console.log(fires[name][i].state);}
+            } 
+        };
 
         for (var i = 0; i < obj.speed+inc; i++) {
             // console.log(obj.pos);
@@ -805,8 +678,8 @@ function engine(player,type) {
         renderer.render(scene, camera);
         // object.material.color = new THREE.Color(parseInt(getRandomColor()));
         scene.simulate();  
-        if(SPEED != 0){
-            for(i=0;i<vehicles.length;i++){
+        for(i=0;i<vehicles.length;i++){
+            if(scene.getObjectByName(vehicles[i].name).speed != 0) {
                 go(vehicles[i].way,vehicles[i].name);
             }
         }
@@ -905,6 +778,8 @@ function getRandomColor() {
 
 <div id="player2" style="color:white;z-index:10;position:absolute;top:200px;right:250px">SPEED : </div>
 <div id="player2_dist" style="color:white;z-index:10;position:absolute;top:220px;right:250px">SPEED : </div>
+
+<input style="z-index:10;position:absolute;top:100px;left:50%" type="button" value="Add Players" onclick="addPlayer(0);addPlayer(2);"/>
 </body>
 
 
