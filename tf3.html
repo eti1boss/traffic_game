@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>01.02 - Simple mesh</title>
+    <script src="libs/three.js"></script>
+    <script src="libs/dat.gui.min.js"></script>
+    <script src="libs/stats.min.js"></script>
+    <script src="libs/OrbitControls.js"></script>
+    <script src="physi.js"></script>
+
+    <script type="text/javascript">
+        Physijs.scripts.worker = 'physijs_worker.js';
+        Physijs.scripts.ammo = 'ammo.js';
+    </script>
+    <style>
+        body {
+            /* set margin to 0 and overflow to hidden, to go fullscreen */
+            margin: 0;
+            overflow: hidden;
+        }
+    </style>
+</head>
+<script>
+
+// global variables
+var renderer;
+var scene;
+var camera;
+var mesh;
+var myVarG, myVarO;
+var loader;
+var matAll, matOrange, matRed, matGreen;
+var    orangeDelay = 2,
+        redDelay = 6,
+        greenDelay = 6;
+
+/**
+ * Initializes the scene, camera and objects. Called when the window is
+ * loaded by using window.onload (see below)
+ */
+function init() {
+
+    // create a scene, that will hold all our elements such as objects, cameras and lights.
+    scene = new THREE.Scene();
+
+    // create a camera, which defines where we're looking at.
+    camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
+
+    // create a render, sets the background color and the size
+    renderer = new THREE.WebGLRenderer();
+    renderer.setClearColor(0x000000, 1.0);
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMapEnabled = true;
+
+    // create the ground plane
+    var planeGeometry = new THREE.PlaneGeometry(100, 100);
+    var planeMaterial = new THREE.MeshLambertMaterial({color: 0xcccccc});
+    var plane = new THREE.Mesh(planeGeometry, planeMaterial);
+    plane.receiveShadow = true;
+
+//une ambiant light
+    var ambi = new THREE.AmbientLight(0xffffff);
+    scene.add(ambi);
+
+//On charge les materials
+    matRed = new THREE.MeshLambertMaterial(
+            {
+                map:THREE.ImageUtils.loadTexture(
+                        "assets/models/trafficlights/trafficlight_red.png"),
+                morphTargets: true , morphNormals: true
+            }
+    );
+    matRed.name = "red";
+
+    matGreen = new THREE.MeshLambertMaterial(
+            {
+
+                map:THREE.ImageUtils.loadTexture(
+                        "assets/models/trafficlights/trafficlight_green.png"),
+                morphTargets: true , morphNormals: true
+            }
+    );
+    matGreen.name = "green";
+
+    matOrange = new THREE.MeshLambertMaterial(
+            {
+                map:THREE.ImageUtils.loadTexture(
+                        "assets/models/trafficlights/trafficlight_orange.png"),
+                morphTargets: true , morphNormals: true
+            }
+    );
+    matOrange.name = "orange";
+
+    matAll = new THREE.MeshLambertMaterial(
+            {
+                map:THREE.ImageUtils.loadTexture(
+                        "assets/models/trafficlights/trafficlight.png"),
+                morphTargets: true , morphNormals: true
+            }
+    );
+    matAll.name = "all";
+
+    ////On lance le modele////
+    loader = new THREE.JSONLoader();
+    loader.load('assets/models/trafficlights/trafficlight1.js', function (geometry){
+        geometry.computeMorphNormals();
+
+        mat = matAll;
+
+        mesh = new THREE.MorphBlendMesh(geometry,mat);
+        // mesh.position.x = 0;
+        mesh.position.y = 0;
+        // mesh.position.z = 0;
+
+        var actualtube = new THREE.CylinderGeometry(2, 2, 45, 45, 0, false);
+
+        var actualtubeMesh = new THREE.Mesh(actualtube, new THREE.MeshBasicMaterial(
+                { color: 0x333333, shading: THREE.FlatShading, side: THREE.DoubleSide, wireframe: false, transparent: false,
+                    vertexColors: THREE.FaceColors, overdraw: false
+                }));
+
+        actualtubeMesh.position.x = 0;
+        actualtubeMesh.position.y = -10;
+        actualtubeMesh.position.z = 0;
+
+        //ajout du tube dans le mesh principal
+        mesh.add(actualtubeMesh);
+});
+
+    loader.onLoadComplete=function(){
+        scene.add( mesh );
+    };
+    // position and point the camera to the center of the scene
+    camera.position.x = 0;
+    camera.position.y = 50;
+    camera.position.z = -200;
+    camera.lookAt(scene.position);
+
+    cameraControl = new THREE.OrbitControls(camera);
+
+    // add the output of the renderer to the html element
+    document.body.appendChild(renderer.domElement);
+
+    // call the render function, after the first render, interval is determined
+    // by requestAnimationFrame
+    render();
+}
+function checkKey(e){
+    e = e|| window.event;
+    var factor = 0.3;
+    if (e.keyCode == '81'){
+        //left
+        greenTL();
+
+    }
+    if (e.keyCode == '90'){
+        //up
+        redTL();
+
+    }
+    if (e.keyCode == '83'){
+        //right
+        orangeTL();
+
+    }
+    else if (e.keyCode == '68'){
+        //down
+    }
+    e.preventDefault();
+}
+
+function greenTL(){
+
+    //loader.initMaterials("assets/models/trafficlights/trafficlight_red.png"
+    this.mesh.material = matGreen;
+    scene.add(mesh);
+
+    //setTimeout(redTL(), 5000);
+    console.log(this.mesh.material.name);
+
+    // and render the scene from the perspective of the camera
+    renderer.render( scene, camera );
+}
+function redTL(){
+
+    this.mesh.material = matRed;
+    scene.add(mesh);
+
+    console.log(this.mesh.material.name);
+
+    // and render the scene from the perspective of the camera
+    renderer.render( scene, camera );
+}
+function busywait(millis) {
+  var start = Date.now();
+  while (Date.now() - start < millis) {}
+}
+function orangeTL(){
+    this.mesh.material = matOrange;
+    scene.add(mesh);
+
+    console.log(this.mesh.material.name);
+
+    // and render the scene from the perspective of the camera
+    renderer.render( scene, camera );
+}
+
+function alternateTL(currentTimeStamp){
+ requestAnimationFrame(orangeTL);
+
+
+   
+
+        setTimeout(function() {
+            console.log("green_" + greenDelay);
+            greenTL();
+        },0);
+
+        setTimeout(function(){
+            console.log("orange_"+orangeDelay);
+            orangeTL();
+        },(greenDelay)*1000);
+
+        setTimeout(function(){
+            console.log("red_"+redDelay);
+            redTL();
+        },(greenDelay+orangeDelay)*1000);
+
+    
+}
+/**
+ * Called when the scene needs to be rendered. Delegates to requestAnimationFrame
+ * for future renders
+ */
+function render(time) {
+ 
+  if (time === undefined)
+    time = Date.now();
+  if (startTime === undefined)
+    startTime = time;
+ 
+  requestAnimationFrame(render);
+    renderer.render(scene, camera);
+   
+}
+
+
+/**
+ * Function handles the resize event. This make sure the camera and the renderer
+ * are updated at the correct moment.
+ */
+function handleResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+//ecoute les touches
+window.onkeydown = checkKey;
+
+//appel l'altenance des feux
+_priorTimeStamp = window.performance.now();
+_requestAnimationFrameID = window.requestAnimationFrame(alternateTL);
+
+// calls the init function when the window is done loading.
+window.onload = init;
+// calls the handleResize function when the window is resized
+window.addEventListener('resize', handleResize, false);
+
+</script>
+<body>
+</body>
+</html>
