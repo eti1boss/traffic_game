@@ -43,6 +43,7 @@
     var dots = [];
     var collidableMeshList = [];
     var selectedObject, movingCube;
+    var dist1, dist2;
  
    /**
      * Initializes the scene, camera and objects. Called when the window is
@@ -56,23 +57,44 @@
 
         ways = [way1, way2, way3, way4];
 
-        var material = Physijs.createMaterial(new THREE.MeshLambertMaterial({color: 0xffffff,side : THREE.DoubleSide}));
 
-        geom = new THREE.Geometry(); 
-        map_rect(0, 0, 40, 40, 0, 1);
-        geom.computeFaceNormals();
-        object = new Physijs.BoxMesh( geom, material);
-        object.position.z = 0;
-        object.rotation.x = Math.PI * -0.5;
-        scene.add(object);
+        // geom = new THREE.Geometry(); 
+        // map_rect(0, 0, 40, 40, 0, 1);
+        // geom.computeFaceNormals();
+        // object = new Physijs.BoxMesh( geom, material);
+        // object.position.z = 0;
+        // object.rotation.x = Math.PI * -0.5;
+        // scene.add(object);
 
+        // geom = new THREE.Geometry(); 
+        // map_rect(40, 40, 40, 40, 2, 3);
+        // geom.computeFaceNormals();
+        // object2 = new Physijs.BoxMesh( geom, material);
+        // object2.position.z = 0;
+        // object2.rotation.x = Math.PI * -0.5;
+        // scene.add(object2);
+
+        var material = Physijs.createMaterial(new THREE.MeshLambertMaterial({color: 0xbe7e0b,side : THREE.DoubleSide}));
         geom = new THREE.Geometry(); 
-        map_rect(40, 40, 40, 40, 2, 3);
+        map_custom1(0, 1);
         geom.computeFaceNormals();
         object2 = new Physijs.BoxMesh( geom, material);
         object2.position.z = 0;
         object2.rotation.x = Math.PI * -0.5;
         scene.add(object2);
+
+
+        var material = Physijs.createMaterial(new THREE.MeshLambertMaterial({color: 0x0b89be,side : THREE.DoubleSide}));
+        geom = new THREE.Geometry(); 
+        map_custom2(2, 3);
+        geom.computeFaceNormals();
+        object2 = new Physijs.BoxMesh( geom, material);
+        object2.position.z = 0;
+        object2.rotation.x = Math.PI * -0.5;
+        object2.position.y=1;
+        scene.add(object2);
+
+
 
 
         ways[1].reverse();
@@ -124,7 +146,7 @@
         cube = new Physijs.BoxMesh(cubeGeometry,cubeMaterial,10);
         cube.castShadow = true;
         cube.name = 'cube';
-        cube.position.set(10,100,50);
+        cube.position.set(10,10,50);
 
         // add the cube to the scene
         scene.add(cube);
@@ -189,16 +211,71 @@ function detectedCollision(objet, directionVector){
     return false;
 }
 
+function map_custom1(idWay1, idWay2){
+
+    drawRect(   0   ,   -20   ,   40  ,   0 , idWay1, idWay2);
+    drawCurve(  40  ,   0   ,   80  ,   -40 , 'HD', 1,  idWay1, idWay2);
+    drawRect(   60  ,   -40 ,   80  ,   -80 , idWay1, idWay2);
+    drawCurve(  100  ,   -120 ,   60 ,   -80, 'BG', -1, idWay1, idWay2);
+    drawRect(   100 ,   -120,   180 ,   -100, idWay1, idWay2);
+    drawCurve(  220 ,   -80, 180 ,   -120 , 'BD', -1, idWay1, idWay2);
+    drawRect(   220 ,   -80 ,   200 ,   -40 , idWay1, idWay2);
+    drawCurve(  180 ,   0 , 220 ,   -40     , 'HD', -1, idWay1, idWay2);
+    drawCurve(  140 ,   -40 , 180 ,   0   ,    'HG', -1, idWay1, idWay2);
+    drawRect(   140 ,   -40 ,   160 ,   -120, idWay1, idWay2);
+    drawCurve(  160 ,   -120,   120 ,   -160, 'BD', 1, idWay1, idWay2);
+    drawCurve(  80  ,   -180, 120 ,   -140,    'HG', -1, idWay1, idWay2);
+    drawRect(   80  ,   -180,   100 ,   -200, idWay1, idWay2);
+    drawCurve(  100 ,   -200,   60  ,   -240, 'BD', 1, idWay1, idWay2);
+    drawRect(   60  ,   -220,   0   ,   -240, idWay1, idWay2);
+    drawCurve(  0   ,   -240,   -40 ,   -200, 'BG', 1, idWay1, idWay2);
+    drawRect(   -20 ,   -200,   -40 ,   -40 , idWay1, idWay2);
+    drawCurve(  -40 ,   -40 ,   0   ,   0   , 'HG', 1, idWay1, idWay2);
+
+}
+
+function map_custom2(idWay1, idWay2){
+
+    drawRect(   -100    , -60   , 260   , -40   , idWay1, idWay2);
+    drawCurve(  260     , -40   , 300   , -80   , 'HD', 1, idWay1, idWay2);
+    drawCurve(  300     , -80   , 260   , -120  , 'BD', 1, idWay1, idWay2);
+    drawCurve(  220     , -140  , 260   , -100  , 'HG', -1, idWay1, idWay2);
+    drawRect(   220     , -140  , 240   , -200  , idWay1, idWay2);
+    drawCurve(  260     , -240  , 220   , -200  , 'BG', -1, idWay1, idWay2);
+    drawCurve(  300     , -200  , 260   , -240  , 'BD', -1, idWay1, idWay2);
+    drawCurve(  260     , -160   , 300   , -200   , 'HD', -1, idWay1, idWay2);
+    drawRect(   260     , -160  , 140   , -180   , idWay1, idWay2);
+    drawCurve(  100     , -200  , 140   , -160  , 'HG', -1, idWay1, idWay2);
+    drawRect(   100     , -200  , 120   , -220   , idWay1, idWay2);
+    drawCurve(  120     , -220  , 80    , -260  , 'BD', 1, idWay1, idWay2);
+    drawCurve(  80      , -260  , 40    , -220  , 'BG', 1, idWay1, idWay2);
+    drawRect(   60      , -220  , 40    , -180  , idWay1, idWay2);
+    drawCurve(  20      , -140  , 60    , -180  , 'HD', -1, idWay1, idWay2);
+    drawRect(   20      , -140  , -100  , -160  , idWay1, idWay2);
+    drawCurve(  -100    , -160  , -140  , -120  , 'BG', 1, idWay1, idWay2);
+    drawRect(   -120    , -120  , -140  , -80   , idWay1, idWay2);
+    drawCurve(  -140    , -80   , -100  , -40   , 'HG', 1, idWay1, idWay2);
+
+}
+
 
     // Cette fonction a pour but de créer un circuit rectangulaire avec les angles arrondis
 // Plus précisemment, cela créé l'objet 3D et le tableau de coordonnées du chemin des voitures
 function map_rect(x, y, longueurX, longueurY, idWay1, idWay2){
+
+    console.log("x : " + x + " " + "y : " + y + " " + "longueurX : " + longueurX + " " + "longueurY : " + longueurY);
 
     //Création de la forme HAUT
     x1 = x  + largeurRoute*2;
     y1 = y  - largeurRoute;
     x2 = x1 + longueurX
     y2 = y1 + largeurRoute;
+
+    console.log("HAUT");
+    console.log("\t" + "x1 : " + x1)
+    console.log("\t" + "y1 : " + y1)
+    console.log("\t" + "x2 : " + x2)
+    console.log("\t" + "y2 : " + y2)
 
     drawRect(x1,y1,x2,y2, idWay1, idWay2);
 
@@ -208,6 +285,12 @@ function map_rect(x, y, longueurX, longueurY, idWay1, idWay2){
     x2 = x1 + largeurRoute*2;
     y2 = y1 - largeurRoute*2;
 
+    console.log("HAUT DROIT");
+    console.log("\t" + "x1 : " + x1)
+    console.log("\t" + "y1 : " + y1)
+    console.log("\t" + "x2 : " + x2)
+    console.log("\t" + "y2 : " + y2)
+
     drawCurve(x1,y1,x2,y2,'HD', idWay1, idWay2);//RT
 
     //Création de la forme DROITE
@@ -215,6 +298,12 @@ function map_rect(x, y, longueurX, longueurY, idWay1, idWay2){
     y1 = y  - largeurRoute*2;
     x2 = x  + largeurRoute*2+longueurX+largeurRoute*2;
     y2 = y  - largeurRoute*2-longueurY;
+
+    console.log("DROIT");
+    console.log("\t" + "x1 : " + x1)
+    console.log("\t" + "y1 : " + y1)
+    console.log("\t" + "x2 : " + x2)
+    console.log("\t" + "y2 : " + y2)
 
     drawRect(x1,y1,x2,y2, idWay1, idWay2);
 
@@ -224,6 +313,12 @@ function map_rect(x, y, longueurX, longueurY, idWay1, idWay2){
     x2 = x1 - largeurRoute*2;
     y2 = y1 - largeurRoute*2;
 
+    console.log("BAS DROITE");
+    console.log("\t" + "x1 : " + x1)
+    console.log("\t" + "y1 : " + y1)
+    console.log("\t" + "x2 : " + x2)
+    console.log("\t" + "y2 : " + y2)
+
     drawCurve(x1,y1,x2,y2,'BD', idWay1, idWay2);//RB
 
     //Création de la forme BAS
@@ -231,6 +326,12 @@ function map_rect(x, y, longueurX, longueurY, idWay1, idWay2){
     y1 = y  - largeurRoute*2-longueurY-largeurRoute;
     x2 = x1 - longueurX;
     y2 = y1 - largeurRoute;
+
+    console.log("BAS");
+    console.log("\t" + "x1 : " + x1)
+    console.log("\t" + "y1 : " + y1)
+    console.log("\t" + "x2 : " + x2)
+    console.log("\t" + "y2 : " + y2)
 
     drawRect(x1,y1,x2,y2, idWay1, idWay2);
 
@@ -240,6 +341,12 @@ function map_rect(x, y, longueurX, longueurY, idWay1, idWay2){
     x2 = x;
     y2 = y - largeurRoute*2-longueurY
 
+    console.log("BAS GAUCHE");
+    console.log("\t" + "x1 : " + x1)
+    console.log("\t" + "y1 : " + y1)
+    console.log("\t" + "x2 : " + x2)
+    console.log("\t" + "y2 : " + y2)
+
     drawCurve(x1,y1,x2,y2,'BG', idWay1, idWay2);//LB
     
     //Création de la forme GAUCHE
@@ -248,6 +355,12 @@ function map_rect(x, y, longueurX, longueurY, idWay1, idWay2){
     x2 = x;
     y2 = y - largeurRoute*2;
 
+    console.log("GAUCHE");
+    console.log("\t" + "x1 : " + x1)
+    console.log("\t" + "y1 : " + y1)
+    console.log("\t" + "x2 : " + x2)
+    console.log("\t" + "y2 : " + y2)
+
     drawRect(x1,y1,x2,y2, idWay1, idWay2);
     
     //Création de la forme HAUT GAUCHE
@@ -255,6 +368,12 @@ function map_rect(x, y, longueurX, longueurY, idWay1, idWay2){
     y1 = y - largeurRoute*2;
     x2 = x + largeurRoute*2;
     y2 = y;
+
+    console.log("HAUT GAUCHE");
+    console.log("\t" + "x1 : " + x1)
+    console.log("\t" + "y1 : " + y1)
+    console.log("\t" + "x2 : " + x2)
+    console.log("\t" + "y2 : " + y2)
 
     drawCurve(x1,y1,x2,y2,'HG', idWay1, idWay2);//LT
 }
@@ -268,6 +387,7 @@ function map_rect(x, y, longueurX, longueurY, idWay1, idWay2){
         obj2.name=vname;
         obj2.speed = 0;
         obj2.pos=0;
+        obj2.dist=0;
         obj2.position.x = ways[idWay][0].x;
         // obj2.position.y = way2[pos].y-7.1;
         obj2.position.z = ways[idWay][0].z;
@@ -467,7 +587,9 @@ function engine(player,type) {
             obj.position.z = direction.z;
 
             if(ways[wayID][obj.pos].rot != undefined){
-                if(wayID%2 == 0){
+                sens = ways[wayID][obj.pos].rot;
+                // if(wayID%2 == 0){
+                if(sens == 1){
                     obj.rotation.y-=((Math.PI*.5)/39);
                 }
                 else{
@@ -484,8 +606,9 @@ function engine(player,type) {
                 obj.rotation.y=0;
             }
             obj.pos+=1;
+            obj.dist++;
         };
-        
+        $("#"+obj.name+"_dist").text(obj.dist);
     }
 
     function drawRect(x1, y1, x2, y2, idWay1, idWay2){
@@ -546,7 +669,7 @@ function engine(player,type) {
         // ways[idWay2].reverse();
     }
 
-    function drawCurve(x1,y1,x2,y2,corner, idWay1, idWay2){
+    function drawCurve(x1,y1,x2,y2,corner, sens, idWay1, idWay2){
 
         if(corner == 'HD'){
             xRot = 1;
@@ -561,7 +684,7 @@ function engine(player,type) {
             yPos = 0;
         }
         if(corner == 'BG'){
-            xRot = 1;
+            xRot =  1;
             yRot = -1;
             xPos = 0;//x1;
             yPos = y1+y2;
@@ -594,7 +717,7 @@ function engine(player,type) {
                 x = ((x2-x1)*.75/*5/8*/*(Math.cos(i*Math.PI/(2*detailAngle)))+x1)*xRot+xPos;  // x
                 z = -((y2-y1)*.75/*5/8*/*(Math.sin(i*Math.PI/(2*detailAngle)))+y1)*yRot-yPos;  // y
                 y = 7;
-                rot = Math.cos(Math.PI*i);
+                rot = sens;
                 if(i==0 || i == detailAngle){
                     rot = undefined;
                 }
@@ -602,30 +725,30 @@ function engine(player,type) {
                 tmpArray.push({x:x,y:7,z:z,rot:rot,free:true});
 
            }
-           if(yRot == -1){
+           if(yRot*sens == -1){
                 tmpArray.reverse();         
            }
            // console.log(ways[idWay1].length);
            ways[idWay1] = ways[idWay1].concat(tmpArray);
            // console.log(ways[idWay1].length);
 
-        tmpArray = [];
-        for (var i = 0  ; i <= detailAngle ; i+=.25) {
-                x = ((x2-x1)*.75/*7/8*/*(Math.cos(i*Math.PI/(2*detailAngle)))+x1)*xRot+xPos;  // x
-                z = -((y2-y1)*.75/*7/8*/*(Math.sin(i*Math.PI/(2*detailAngle)))+y1)*yRot-yPos;  // y
-                y = 7;
-                rot = Math.cos(Math.PI*i);
-                if(i==0 || i == detailAngle){
-                    rot = undefined;
-                }
+        // tmpArray = [];
+        // for (var i = 0  ; i <= detailAngle ; i+=.25) {
+        //         x = ((x2-x1)*.75/*7/8*/*(Math.cos(i*Math.PI/(2*detailAngle)))+x1)*xRot+xPos;  // x
+        //         z = -((y2-y1)*.75/*7/8*/*(Math.sin(i*Math.PI/(2*detailAngle)))+y1)*yRot-yPos;  // y
+        //         y = 7;
+        //         rot = Math.cos(Math.PI*i)*sens;
+        //         if(i==0 || i == detailAngle){
+        //             rot = undefined;
+        //         }
 
-                tmpArray.push({x:x,y:7,z:z,rot:rot,free:true});
+        //         tmpArray.push({x:x,y:7,z:z,rot:rot,free:true});
 
-           }
+        //    }
 
-           if(yRot == -1){
-                tmpArray.reverse();         
-           }
+        //    if(yRot*sens == -1){
+        //         tmpArray.reverse();         
+        //    }
            ways[idWay2] = ways[idWay2].concat(tmpArray);
 
 
@@ -748,9 +871,9 @@ function getRandomColor() {
         scene.add(dirLight45);
 
         // create light
-        spotLight = new THREE.SpotLight(0xffffff,0.25);
+        spotLight = new THREE.SpotLight(0xffffff,.75);
         spotLight.position.set(0,500,0);
-        spotLight.target.position.set(0,0,0);
+        spotLight.target.position.set(120,0,120);
         scene.add(spotLight);
 
         // spotLight2 = new THREE.SpotLight(0xff0000,.7);
@@ -778,7 +901,10 @@ function getRandomColor() {
 </script>
 <body>
 <div id="player1" style="color:white;z-index:10;position:absolute;top:200px;left:250px">SPEED : </div>
+<div id="player1_dist" style="color:white;z-index:10;position:absolute;top:220px;left:250px">SPEED : </div>
+
 <div id="player2" style="color:white;z-index:10;position:absolute;top:200px;right:250px">SPEED : </div>
+<div id="player2_dist" style="color:white;z-index:10;position:absolute;top:220px;right:250px">SPEED : </div>
 </body>
 
 
