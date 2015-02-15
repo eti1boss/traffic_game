@@ -46,6 +46,8 @@
     var selectedObject, movingCube;
     var dist1, dist2;
     var fires;
+    var timerSeq, timer11, timer12, timer21, timer22;
+    var penalites = [];
    /**
      * Initializes the scene, camera and objects. Called when the window is
      * loaded by using window.onload (see below)
@@ -62,6 +64,12 @@
 
         fires["player1"] = [];
 
+        penalites["player1"] = [];
+        penalites["player1"]["Orange"]=0;
+        penalites["player1"]["Red"]=0;
+        penalites["player2"] = [];
+        penalites["player2"]["Orange"]=0;
+        penalites["player2"]["Red"]=0;
 
         fires["player2"] = [];
 
@@ -154,7 +162,7 @@
     matRed = new THREE.MeshLambertMaterial(
             {
                 map:THREE.ImageUtils.loadTexture(
-                        "assets/models/trafficlights/trafficlight_red.png"),
+                        "assets/models/trafficlights/trafficlight_red3.png"),
                 morphTargets: true , morphNormals: true
             }
     );
@@ -164,7 +172,7 @@
             {
 
                 map:THREE.ImageUtils.loadTexture(
-                        "assets/models/trafficlights/trafficlight_green.png"),
+                        "assets/models/trafficlights/trafficlight_green3.png"),
                 morphTargets: true , morphNormals: true
             }
     );
@@ -173,7 +181,7 @@
     matOrange = new THREE.MeshLambertMaterial(
             {
                 map:THREE.ImageUtils.loadTexture(
-                        "assets/models/trafficlights/trafficlight_orange.png"),
+                        "assets/models/trafficlights/trafficlight_orange3.png"),
                 morphTargets: true , morphNormals: true
             }
     );
@@ -381,10 +389,16 @@ fires["player2"].push({pos:29, state:""});
         renderer.shadowMapEnabled = true;
 
         // position and point the camera to the center of the scene
-        camera.position.x = 200;
-        camera.position.y = 100;
-        camera.position.z = 200;
-        camera.lookAt(scene.position);
+        camera.position.x = 270;
+        camera.position.y = 140;
+        camera.position.z = 344;
+        
+        // camera.rotation.x = -.5;
+        // camera.rotation.y = .5;
+        // camera.rotation.z = .2;
+
+        // camera.up = new THREE.Vector3(0,1,0);
+        // camera.lookAt(new THREE.Vector3(100,100,100));
         cameraControl = new THREE.OrbitControls(camera);
 
         // setup the control of color, opacity, camera speed...
@@ -518,12 +532,13 @@ function detectedCollision(objet, directionVector){
     var engineOnP1, engineOffP1, engineOnP2, engineOffP2;
 
 function engine(player,type) {
+    speed = 1;
     if(player == 1){
         speedP1 = scene.getObjectByName('player1').speed;
         if(type==1){
-            if(speedP1 >= 2 ) {
+            if(speedP1 >= speed ) {
                 clearInterval(engineOnP1);
-                speedP1 = 2;
+                speedP1 = speed;
             } else {
                 speedP1 += .1 ;
             }
@@ -536,14 +551,14 @@ function engine(player,type) {
             }   
         }
         scene.getObjectByName('player1').speed = speedP1;
-        $("#player1").text("SPEED : " + Math.floor(speedP1*50));
+        $("#player1").text("SPEED : " + Math.floor(speedP1*50) + "km/h");
     }
     if(player == 2){
         speedP2 = scene.getObjectByName('player2').speed;
         if(type==1){
-            if(speedP2 >= 2 ) {
+            if(speedP2 >= speed ) {
                 clearInterval(engineOnP2);
-                speedP2 = 2;
+                speedP2 = speed;
             } else {
                 speedP2 += .1 ;
             }
@@ -556,7 +571,7 @@ function engine(player,type) {
             }   
         }
         scene.getObjectByName('player2').speed = speedP2;
-    $("#player2").text("SPEED : " + Math.floor(speedP2*50));
+    $("#player2").text("SPEED : " + Math.floor(speedP2*50) + "km/h");
     }
 }
     
@@ -577,7 +592,6 @@ function engine(player,type) {
 
 
         switchFiresP1();
-        switchFiresP2();
 
         fires["player1"][0].state="Green";
         fires["player1"][1].state="Red";
@@ -652,25 +666,80 @@ function engine(player,type) {
 
     function switchFiresP1(){
         seq1Green();
-        setTimeout(function(){
+
+        timer11 = setTimeout(function(){
             seq1Orange();
         },5000);
 
-        setTimeout(function(){
+        timer12 = setTimeout(function(){
             seq1Red();
         },8000);
+
+        //////////////////////
+
+        seq2Red();
+
+        timer21 = setTimeout(function(){
+            seq2Green();
+        },8000);
+
+        timer22 = setTimeout(function(){
+            seq2Orange();
+        },13000);
+
     }
 
     function switchFiresP2(){
-seq2Red();
+        seq2Green();
 
-        setTimeout(function(){
-seq2Green();
+        timer11 = setTimeout(function(){
+            seq2Orange();
+        },5000);
+
+        timer12 = setTimeout(function(){
+            seq2Red();
         },8000);
 
-        setTimeout(function(){
-seq2Orange();
+        //////////////////////
+
+        seq1Red();
+
+        timer21 = setTimeout(function(){
+            seq1Green();
+        },8000);
+
+        timer22 = setTimeout(function(){
+            seq1Orange();
         },13000);
+    }
+
+    function switchFires(player){
+        clearInterval(timerSeq);
+        clearTimeout(timer11);
+        clearTimeout(timer12);
+        clearTimeout(timer21);
+        clearTimeout(timer22);
+
+        if(player == "player1") {
+            if( (mesh.material.name == "orange" || mesh.material.name == "red") && mesh2.material.name != "orange" ) {
+                switchFiresP1();
+                timerSeq = setInterval(function(){switchFiresP1();},16000);
+            } else  {
+                switchFiresP2();
+                timerSeq = setInterval(function(){switchFiresP2();},16000);
+            }            
+        }
+        if(player == "player2") {
+            if( (mesh7.material.name == "orange" || mesh7.material.name == "red") && mesh8.material.name != "orange" ) {
+                switchFiresP2();
+                timerSeq = setInterval(function(){switchFiresP2();},16000);
+            } else {
+                switchFiresP1();
+                timerSeq = setInterval(function(){switchFiresP1();},16000);
+            }
+        }
+
+
     }
 
     function checkKey(e){
@@ -717,29 +786,17 @@ seq2Orange();
         }
 
         for (var i = 0; i <= 5; i++) {
-            if( obj.pos >= fires[name][i].pos -1 && obj.pos <= fires[name][i].pos +1){
-                console.log(name + " est passe au feu : " + fires[name][i].state);
+            if( obj.pos >= fires[name][i].pos  && obj.pos <= fires[name][i].pos ){
+                state = fires[name][i].state;
+                if(state != "Green") {
+                    penalites[name][state]++
+                    // console.log("penalites[name][state] : " + penalites[name][state]);
+                    $("#"+name+"_"+state).text("Feux "+ state +" : " + penalites[name][state]);
+                    // console.log(name + " est passe au feu : " + fires[name][i].state);
+                }
             }
         }
 
-        // for (var i = 6; i >= 0; i--) {
-        //     if( obj.pos >= fires[name][i].pos && obj.pos <= fires[name][i].pos+10){
-        //         console.log("ok");
-        //         if( fires[name][i].state == "orange" ) {
-        //             clearInterval(engineOnP1);
-        //             console.log("ORANGE");
-        //             obj.speed = 0;
-        //             // obj.pos--;
-        //         }
-        //         else if( fires[name][i].state == "red" ) {
-        //             clearInterval(engineOnP1);
-        //             console.log("ROUGE");
-        //             obj.speed = 0;
-        //             // obj.pos--;
-        //         }
-        //         else { console.log(fires[name][i].state);}
-        //     } 
-        // };
 
         for (var i = 0; i < obj.speed+inc; i++) {
             // console.log(obj.pos);
@@ -748,9 +805,7 @@ seq2Orange();
                 obj.pos = 0;
             }
 
-            // if(!selectedObject){
-            //   selectedObject= movingCube;
-            // } 
+
 
             var direction = new THREE.Vector3(
                 ways[wayID][obj.pos].x,
@@ -758,11 +813,6 @@ seq2Orange();
                 ways[wayID][obj.pos].z
                 );
 
-            // if(detectedCollision(selectedObject,direction)){
-            //     console.log("COLLISION : " + selectedObject.name);
-            //     SPEED=0;
-            //     direction.y=10;
-            // }
             
             obj.position.x = direction.x;
             obj.position.y = direction.y;
@@ -790,7 +840,7 @@ seq2Orange();
             obj.pos+=1;
             obj.dist++;
         };
-        $("#"+obj.name+"_dist").text(obj.dist);
+        $("#"+obj.name+"_dist").text("distance parcourue : " + obj.dist);
     }
 
     function drawRect(x1, y1, x2, y2, idWay1, idWay2){
@@ -1078,18 +1128,33 @@ function getRandomColor() {
         // spotLight4.target.position.set(20,0,20);
         // scene.add(spotLight4);
     }
-
+function launchGame(){
+    $("#game").css("z-index",-1);
+    addPlayer(0);addPlayer(2);
+    initFeux();timerSeq = setInterval(function(){switchFiresP1();},16000);
+}
 
 </script>
 <body>
-<div id="player1" style="color:white;z-index:10;position:absolute;top:200px;left:250px">SPEED : </div>
-<div id="player1_dist" style="color:white;z-index:10;position:absolute;top:220px;left:250px">SPEED : </div>
+<div onclick="launchGame();" id="game" style="cursor:pointer;color:white;background-color:grey;z-index:15;position:absolute;width:100%;height:100%;opacity:.8">
+<p style="border:5px white solid;color:white;margin-top:400px;margin-left:700px;font-size:75px;width:500px;font-family:verdana">START GAME</p>
+</div>
+<div id="" style="color:white;z-index:10;position:absolute;top:180px;left:250px">Player 1 : Z / S</div>
+<div id="player1" style="color:white;z-index:10;position:absolute;top:200px;left:250px"></div>
+<div id="player1_dist" style="color:white;z-index:10;position:absolute;top:220px;left:250px"></div>
+<div id="player1_Orange" style="color:white;z-index:10;position:absolute;top:240px;left:250px"></div>
+<div id="player1_Red" style="color:white;z-index:10;position:absolute;top:260px;left:250px"></div>
 
-<div id="player2" style="color:white;z-index:10;position:absolute;top:200px;right:250px">SPEED : </div>
-<div id="player2_dist" style="color:white;z-index:10;position:absolute;top:220px;right:250px">SPEED : </div>
+<div id="" style="color:white;z-index:10;position:absolute;top:180px;right:250px">Player 2 : O / L</div>
+<div id="player2" style="color:white;z-index:10;position:absolute;top:200px;right:250px"></div>
+<div id="player2_dist" style="color:white;z-index:10;position:absolute;top:220px;right:250px"></div>
+<div id="player2_Orange" style="color:white;z-index:10;position:absolute;top:240px;right:250px"></div>
+<div id="player2_Red" style="color:white;z-index:10;position:absolute;top:260px;right:250px"></div>
 
-<input style="z-index:10;position:absolute;top:100px;left:50%" type="button" value="Add Players" onclick="addPlayer(0);addPlayer(2);"/>
-<input style="z-index:10;position:absolute;top:120px;left:50%" type="button" value="Launch Fires" onclick="initFeux();setInterval(function(){switchFiresP1();switchFiresP2();},16000);"/>
+<!-- <input style="z-index:10;position:absolute;top:100px;left:50%" type="button" value="Add Players" onclick="addPlayer(0);addPlayer(2);"/> -->
+<!-- <input style="z-index:10;position:absolute;top:125px;left:50%" type="button" value="Launch Fires" onclick="initFeux();timerSeq = setInterval(function(){switchFiresP1();},16000);"/> -->
+<input style="z-index:10;position:absolute;top:150px;left:25%" type="button" value="Switch fires" onclick="switchFires('player1');"/>
+<input style="z-index:10;position:absolute;top:175px;left:75%" type="button" value="Switch fires" onclick="switchFires('player2');"/>
 
 </body>
 
