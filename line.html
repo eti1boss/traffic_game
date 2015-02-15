@@ -61,21 +61,9 @@
         fires = [];
 
         fires["player1"] = [];
+
+
         fires["player2"] = [];
-
-        fires["player1"].push({pos:210, state:"orange"});
-        fires["player1"].push({pos:310, state:"green"});
-        fires["player1"].push({pos:410, state:"green"});
-        // fires["player1"].push({pos:510, state:"green"});
-        // fires["player1"].push({pos:610, state:"green"});
-        // fires["player1"].push({pos:660, state:"green"});
-
-        // fires["player2"].push({pos:110, state:"green"});
-        // fires["player2"].push({pos:210, state:"green"});
-        // fires["player2"].push({pos:310, state:"green"});
-        // fires["player2"].push({pos:410, state:"green"});
-        // fires["player2"].push({pos:510, state:"green"});
-        // fires["player2"].push({pos:610, state:"green"});
 
         // geom = new THREE.Geometry(); 
         // map_rect(0, 0, 40, 40, 0, 1);
@@ -154,6 +142,188 @@
         //     };
 
         // };
+
+
+
+////////////////////////////FIRE
+
+
+
+
+//On charge les materials
+    matRed = new THREE.MeshLambertMaterial(
+            {
+                map:THREE.ImageUtils.loadTexture(
+                        "assets/models/trafficlights/trafficlight_red.png"),
+                morphTargets: true , morphNormals: true
+            }
+    );
+    matRed.name = "red";
+
+    matGreen = new THREE.MeshLambertMaterial(
+            {
+
+                map:THREE.ImageUtils.loadTexture(
+                        "assets/models/trafficlights/trafficlight_green.png"),
+                morphTargets: true , morphNormals: true
+            }
+    );
+    matGreen.name = "green";
+
+    matOrange = new THREE.MeshLambertMaterial(
+            {
+                map:THREE.ImageUtils.loadTexture(
+                        "assets/models/trafficlights/trafficlight_orange.png"),
+                morphTargets: true , morphNormals: true
+            }
+    );
+    matOrange.name = "orange";
+
+    matAll = new THREE.MeshLambertMaterial(
+            {
+                map:THREE.ImageUtils.loadTexture(
+                        "assets/models/trafficlights/trafficlight.png"),
+                morphTargets: true , morphNormals: true
+            }
+    );
+    matAll.name = "all";
+
+
+
+
+    ////On lance le modele////
+    loader = new THREE.JSONLoader();
+    loader.load('assets/models/trafficlights/trafficlight1.js', function (geometry){
+        geometry.computeMorphNormals();
+
+        mat = matAll;
+
+        mesh = new THREE.MorphBlendMesh(geometry,mat);
+        // mesh.position.x = 0;
+        mesh.position.y = 0;
+        // mesh.position.z = 0;
+
+        var actualtube = new THREE.CylinderGeometry(2, 2, 45, 45, 0, false);
+
+        var actualtubeMesh = new THREE.Mesh(actualtube, new THREE.MeshBasicMaterial(
+                { color: 0x333333, shading: THREE.FlatShading, side: THREE.DoubleSide, wireframe: false, transparent: false,
+                    vertexColors: THREE.FaceColors, overdraw: false
+                }));
+
+        actualtubeMesh.position.x = 0;
+        actualtubeMesh.position.y = -10;
+        actualtubeMesh.position.z = 0;
+
+        //55
+        //210
+        //300
+        //468
+        //565
+        //615
+
+        //ajout du tube dans le mesh principal
+        mesh.add(actualtubeMesh);
+
+        mesh.scale.x = .5;
+        mesh.scale.y = .5;
+        mesh.scale.z = .5;
+
+        mesh.position.x = ways[0][59].x-11;
+        mesh.position.y = ways[0][59].y;
+        mesh.position.z = ways[0][59].z;
+        scene.add(mesh);
+
+        mesh2 = mesh.clone();
+        mesh2.position.x = ways[0][212].x+11;
+        mesh2.position.y = ways[0][212].y;
+        mesh2.position.z = ways[0][212].z;
+        mesh2.rotation.y = Math.PI;
+        scene.add(mesh2);
+        
+        mesh3 = mesh.clone();
+        mesh3.position.x = ways[0][302].x-11;
+        mesh3.position.y = ways[0][302].y;
+        mesh3.position.z = ways[0][302].z;
+        scene.add(mesh3);
+        
+        mesh4 = mesh.clone();
+        mesh4.position.x = ways[0][475].x;
+        mesh4.position.y = ways[0][475].y;
+        mesh4.position.z = ways[0][475].z-11;
+        mesh4.rotation.y=-Math.PI*.5;
+        scene.add(mesh4);
+        
+        mesh5 = mesh.clone();
+        mesh5.position.x = ways[0][568].x+11;
+        mesh5.position.y = ways[0][568].y;
+        mesh5.position.z = ways[0][568].z;
+        mesh5.rotation.y=Math.PI;
+        scene.add(mesh5);
+        
+        mesh6 = mesh.clone();
+        mesh6.position.x = ways[0][618].x+11;
+        mesh6.position.y = ways[0][618].y;
+        mesh6.position.z = ways[0][618].z;
+        mesh6.rotation.y=Math.PI;
+        scene.add(mesh6);
+
+        //////////////////////////////
+
+        mesh7 = mesh.clone();
+        mesh7.position.x = ways[2][29].x
+        mesh7.position.y = ways[2][29].y;
+        mesh7.position.z = ways[2][29].z+11;
+        mesh7.rotation.y=Math.PI*.5;
+        scene.add(mesh7);
+
+        mesh8 = mesh.clone();
+        mesh8.position.x = ways[2][79].x;
+        mesh8.position.y = ways[2][79].y;
+        mesh8.position.z = ways[2][79].z+11;
+        mesh8.rotation.y=Math.PI*.5;
+        scene.add(mesh8);
+
+        mesh9 = mesh.clone();
+        mesh9.position.x = ways[2][119].x;
+        mesh9.position.y = ways[2][119].y;
+        mesh9.position.z = ways[2][119].z+11;
+        mesh9.rotation.y=Math.PI*.5;
+        scene.add(mesh9);
+
+        mesh10 = mesh.clone();
+        mesh10.position.x = ways[2][149].x;
+        mesh10.position.y = ways[2][149].y;
+        mesh10.position.z = ways[2][149].z+11;
+        mesh10.rotation.y=Math.PI*.5;
+        scene.add(mesh10);
+
+        mesh11 = mesh.clone();
+        mesh11.position.x = ways[2][621].x-20;
+        mesh11.position.y = ways[2][621].y;
+        mesh11.position.z = ways[2][621].z;
+        mesh11.rotation.y=Math.PI*1.2;
+        scene.add(mesh11);
+
+        mesh12 = mesh.clone();
+        mesh12.position.x = ways[2][727].x;
+        mesh12.position.y = ways[2][727].y;
+        mesh12.position.z = ways[2][727].z-11;
+        mesh12.rotation.y=Math.PI*-.5;
+        scene.add(mesh12);
+
+        
+        
+});
+
+
+////////////////////////////FIRE
+
+
+
+
+
+
+
 
         // create a cube
         var cubeGeometry = new THREE.BoxGeometry(10,10,10);
