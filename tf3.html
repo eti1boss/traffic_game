@@ -102,7 +102,7 @@ function init() {
 
     ////On lance le modele////
     loader = new THREE.JSONLoader();
-    loader.load('assets/models/trafficlights/trafficlight1.js', function (geometry){
+    loader.load('assets/models/trafficlights/trafficlight3.js', function (geometry){
         geometry.computeMorphNormals();
 
         mat = matAll;
@@ -206,10 +206,9 @@ function orangeTL(){
 }
 
 function alternateTL(currentTimeStamp){
- requestAnimationFrame(orangeTL);
+ //requestAnimationFrame(orangeTL);
 
-
-   
+    setInterval(function(){
 
         setTimeout(function() {
             console.log("green_" + greenDelay);
@@ -226,7 +225,7 @@ function alternateTL(currentTimeStamp){
             redTL();
         },(greenDelay+orangeDelay)*1000);
 
-    
+    },(greenDelay+orangeDelay+redDelay)*1000);
 }
 /**
  * Called when the scene needs to be rendered. Delegates to requestAnimationFrame
