@@ -88,12 +88,19 @@ function engine(player,type) {
             }
 
 
-
-            var direction = new THREE.Vector3(
-                ways[wayID][obj.pos].x,
-                ways[wayID][obj.pos].y-7.1,
-                ways[wayID][obj.pos].z
-                );
+            if(ogre){
+            	var direction = new THREE.Vector3(
+	                ways[wayID][obj.pos].x,
+	                ways[wayID][obj.pos].y+3,
+	                ways[wayID][obj.pos].z
+                );            	
+            } else {
+            	var direction = new THREE.Vector3(
+	                ways[wayID][obj.pos].x,
+	                ways[wayID][obj.pos].y-7.1,
+	                ways[wayID][obj.pos].z
+                );            	
+            }
 
             
             obj.position.x = direction.x;
@@ -103,12 +110,21 @@ function engine(player,type) {
             if(ways[wayID][obj.pos].rot != undefined){
                 sens = ways[wayID][obj.pos].rot;
                 // if(wayID%2 == 0){
-                if(sens == 1){
-                    obj.rotation.y-=((Math.PI*.5)/39);
-                }
-                else{
-                    obj.rotation.y+=((Math.PI*.5)/39);   
-                }
+                	if(ogre){
+		                if(sens != 1){
+		                    obj.rotation.y-=((Math.PI*.5)/39);
+		                }
+		                else{
+		                    obj.rotation.y+=((Math.PI*.5)/39);   
+		                }
+                	} else {
+		                if(sens == 1){
+		                    obj.rotation.y-=((Math.PI*.5)/39);
+		                }
+		                else{
+		                    obj.rotation.y+=((Math.PI*.5)/39);   
+		                }
+                	}
             }
             else{
                 if(-obj.rotation.y > 1.5 && -obj.rotation.y < 1.6 ) obj.rotation.y = -Math.PI* .5;

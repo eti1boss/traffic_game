@@ -170,6 +170,7 @@ function loadFires(){
         mesh12.rotation.y=Math.PI*.5;
         scene.add(mesh12);
         
+
 });
 
 }
@@ -189,19 +190,21 @@ function loadFires(){
         mesh11.material = matRed;
         mesh12.material = matGreen;
 
-
         switchFiresP1();
 
-        fires["player1"][0].state="Green";
-        fires["player1"][1].state="Red";
-        fires["player1"][2].state="Red";
-        fires["player1"][3].state="Green";
-        fires["player1"][4].state="Green";
-        fires["player1"][5].state="Red";
-        fires["player2"][0].state="Red";
-        fires["player2"][1].state="Green";
-        fires["player2"][2].state="Green";
-        fires["player2"][3].state="Red";
-        fires["player2"][4].state="Red";
-        fires["player2"][5].state="Green";
+        fires["player1"].push({pos:59, state:"Green"});
+		fires["player1"].push({pos:212, state:"Red"});
+		fires["player1"].push({pos:302, state:"Red"});
+		fires["player1"].push({pos:475, state:"Green"});
+		fires["player1"].push({pos:568, state:"Green"});
+		fires["player1"].push({pos:618, state:"Red"});
+
+		fires["player2"].push({pos:79, state:"Red"});
+		fires["player2"].push({pos:119, state:"Green"});
+		fires["player2"].push({pos:149, state:"Green"});
+		fires["player2"].push({pos:621, state:"Red"});
+		fires["player2"].push({pos:727, state:"Red"});
+		fires["player2"].push({pos:29, state:"Green"});
+
+
     }

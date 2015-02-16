@@ -1,0 +1,41 @@
+body {
+	margin: 0;
+	overflow: hidden;
+	font-family: verdana;
+}
+
+.switch{
+	background-color: green;
+	opacity: .7;
+	width: 250px;
+	height: 300px;
+	border-radius: 25px;
+	font-family: verdana;
+	padding: 10px;
+}
+
+.avoid{
+	background-color: red;
+	opacity: .7;
+	width: 250px;
+	height: 300px;
+	border-radius: 25px;
+	font-family: verdana;
+	padding: 10px;
+}
+
+.text{
+	padding: 10px;
+}
+
+.middle{
+	font-size: 50pt;
+}
+
+.left{
+	left:50px;
+}
+
+.right{
+	right:50px;
+}
