@@ -532,9 +532,12 @@ function detectedCollision(objet, directionVector){
     var engineOnP1, engineOffP1, engineOnP2, engineOffP2;
 
 function engine(player,type) {
-    speed = 1;
+    speed = parseFloat($("#player"+player+"_speed").val());
+
+    console.log('parseFloat($("#player_"+name+"_speed").val());');
+
     if(player == 1){
-        speedP1 = scene.getObjectByName('player1').speed;
+        speedP1 = parseFloat(scene.getObjectByName('player1').speed);
         if(type==1){
             if(speedP1 >= speed ) {
                 clearInterval(engineOnP1);
@@ -543,18 +546,23 @@ function engine(player,type) {
                 speedP1 += .1 ;
             }
         } else {
-            if(speedP1 <= 0 ) {
+            if(speedP1 <= speed ) {
                 clearInterval(engineOffP1);
-                speedP1 = 0;
+                speedP1 = speed;
             } else {
-                speedP1 -= .5 ;
+                if(speed == 0) {
+                    speedP1 -= .5 ;
+                } else {
+                    speedP1 -= .25 ;
+                }
             }   
         }
         scene.getObjectByName('player1').speed = speedP1;
         $("#player1").text("SPEED : " + Math.floor(speedP1*50) + "km/h");
     }
+
     if(player == 2){
-        speedP2 = scene.getObjectByName('player2').speed;
+        speedP2 = parseFloat(scene.getObjectByName('player2').speed);
         if(type==1){
             if(speedP2 >= speed ) {
                 clearInterval(engineOnP2);
@@ -563,15 +571,19 @@ function engine(player,type) {
                 speedP2 += .1 ;
             }
         } else {
-            if(speedP2 <= 0 ) {
+            if(speedP2 <= speed ) {
                 clearInterval(engineOffP2);
-                speedP2 = 0;
+                speedP2 = speed;
             } else {
-                speedP2 -= .5 ;
+                if(speed == 0) {
+                    speedP2 -= .5 ;
+                } else {
+                    speedP2 -= .25 ;
+                }
             }   
         }
         scene.getObjectByName('player2').speed = speedP2;
-    $("#player2").text("SPEED : " + Math.floor(speedP2*50) + "km/h");
+        $("#player2").text("SPEED : " + Math.floor(speedP2*50) + "km/h");
     }
 }
     
@@ -748,11 +760,39 @@ function engine(player,type) {
         if(e.keyCode == '90'){//Z
             clearInterval(engineOnP1);
             clearInterval(engineOffP1);
+            currentSpeed = $("#player1_speed").val();
+            if( currentSpeed == 0) {
+                currentSpeed = .5;
+            }
+            else if( currentSpeed == .5) {
+                currentSpeed = 1;
+            }
+            else if( currentSpeed == 1) {
+                currentSpeed = 1.5;
+            }
+            else if( currentSpeed == 1.5) {
+                currentSpeed = 2;
+            }
+            $("#player1_speed").val(currentSpeed);
             engineOnP1 = setInterval(function(){engine(1,1)},200);
         }
         if(e.keyCode == '83'){//S
             clearInterval(engineOnP1);
             clearInterval(engineOffP1);
+            currentSpeed = $("#player1_speed").val();
+            if( currentSpeed == 2) {
+                currentSpeed = 1.5;
+            }
+            else if( currentSpeed == 1.5) {
+                currentSpeed = 1;
+            }
+            else if( currentSpeed == 1) {
+                currentSpeed = .5;
+            }
+            else if( currentSpeed == .5) {
+                currentSpeed = 0;
+            }
+            $("#player1_speed").val(currentSpeed);
             engineOffP1 = setInterval(function(){engine(1,0)},200);
         }
         if(e.keyCode == '65'){//S
@@ -761,11 +801,41 @@ function engine(player,type) {
         }
 
         if(e.keyCode == '79'){//O
+            clearInterval(engineOnP2);
             clearInterval(engineOffP2);
+            currentSpeed = $("#player2_speed").val();
+            if( currentSpeed == 0) {
+                currentSpeed = .5;
+            }
+            else if( currentSpeed == .5) {
+                currentSpeed = 1;
+            }
+            else if( currentSpeed == 1) {
+                currentSpeed = 1.5;
+            }
+            else if( currentSpeed == 1.5) {
+                currentSpeed = 2;
+            }
+            $("#player2_speed").val(currentSpeed);
             engineOnP2 = setInterval(function(){engine(2,1)},200);
         }
         if(e.keyCode == '76'){//L
             clearInterval(engineOnP2);
+            clearInterval(engineOffP2);
+            currentSpeed = $("#player2_speed").val();
+            if( currentSpeed == 2) {
+                currentSpeed = 1.5;
+            }
+            else if( currentSpeed == 1.5) {
+                currentSpeed = 1;
+            }
+            else if( currentSpeed == 1) {
+                currentSpeed = .5;
+            }
+            else if( currentSpeed == .5) {
+                currentSpeed = 0;
+            }
+            $("#player2_speed").val(currentSpeed);
             engineOffP2 = setInterval(function(){engine(2,0)},200);
         }
         if(e.keyCode == '80'){//P
@@ -1132,6 +1202,18 @@ function launchGame(){
     $("#game").css("z-index",-1);
     addPlayer(0);addPlayer(2);
     initFeux();timerSeq = setInterval(function(){switchFiresP1();},16000);
+
+
+}
+var timeLeftInterval;
+function setTimeLeft(player){
+    clearInterval(timeLeftInterval);
+    var d = new Date().getSeconds()+10;
+    var timeLeft = 0;
+    timeLeftInterval = setInterval(function(){
+        timeLeft = d - new Date().getSeconds();
+        $("#"+player+"_attack").text(timeLeft);
+    },1000);
 }
 
 </script>
@@ -1139,17 +1221,22 @@ function launchGame(){
 <div onclick="launchGame();" id="game" style="cursor:pointer;color:white;background-color:grey;z-index:15;position:absolute;width:100%;height:100%;opacity:.8">
 <p style="border:5px white solid;color:white;margin-top:400px;margin-left:700px;font-size:75px;width:500px;font-family:verdana">START GAME</p>
 </div>
+
 <div id="" style="color:white;z-index:10;position:absolute;top:180px;left:250px">Player 1 : Z / S</div>
 <div id="player1" style="color:white;z-index:10;position:absolute;top:200px;left:250px"></div>
 <div id="player1_dist" style="color:white;z-index:10;position:absolute;top:220px;left:250px"></div>
 <div id="player1_Orange" style="color:white;z-index:10;position:absolute;top:240px;left:250px"></div>
 <div id="player1_Red" style="color:white;z-index:10;position:absolute;top:260px;left:250px"></div>
+<div id="player1_attack" style="color:white;z-index:10;position:absolute;top:280px;left:250px">SWITCH FIRES</div>
+<input type="hidden" id="player1_speed" value="0"/>
 
 <div id="" style="color:white;z-index:10;position:absolute;top:180px;right:250px">Player 2 : O / L</div>
 <div id="player2" style="color:white;z-index:10;position:absolute;top:200px;right:250px"></div>
 <div id="player2_dist" style="color:white;z-index:10;position:absolute;top:220px;right:250px"></div>
 <div id="player2_Orange" style="color:white;z-index:10;position:absolute;top:240px;right:250px"></div>
 <div id="player2_Red" style="color:white;z-index:10;position:absolute;top:260px;right:250px"></div>
+<div id="player2_attack" style="color:white;z-index:10;position:absolute;top:280px;right:250px">AVOID FIRES</div>
+<input type="hidden" id="player2_speed" value="0"/>
 
 <!-- <input style="z-index:10;position:absolute;top:100px;left:50%" type="button" value="Add Players" onclick="addPlayer(0);addPlayer(2);"/> -->
 <!-- <input style="z-index:10;position:absolute;top:125px;left:50%" type="button" value="Launch Fires" onclick="initFeux();timerSeq = setInterval(function(){switchFiresP1();},16000);"/> -->
