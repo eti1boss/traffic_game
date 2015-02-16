@@ -558,7 +558,7 @@ function engine(player,type) {
             }   
         }
         scene.getObjectByName('player1').speed = speedP1;
-        $("#player1_speed").text("SPEED : " + Math.floor(speedP1*50) + "km/h");
+        $("#player1_speed").text(Math.floor(speedP1*50));
     }
 
     if(player == 2){
@@ -583,7 +583,7 @@ function engine(player,type) {
             }   
         }
         scene.getObjectByName('player2').speed = speedP2;
-        $("#player2_speed").text("SPEED : " + Math.floor(speedP2*50) + "km/h");
+        $("#player2_speed").text(Math.floor(speedP2*50));
     }
 }
     
@@ -795,9 +795,10 @@ function engine(player,type) {
             $("#player1_speed").val(currentSpeed);
             engineOffP1 = setInterval(function(){engine(1,0)},200);
         }
-        if(e.keyCode == '65'){//S
-            clearInterval(engineOnP2);
-            myVar2 = setInterval(function(){engine(2,0)},200);
+        if(e.keyCode == '65'){//A
+            if($("#player1").attr("class") == "switch"){
+                switchFires('player1');   
+            }
         }
 
         if(e.keyCode == '79'){//O
@@ -839,8 +840,9 @@ function engine(player,type) {
             engineOffP2 = setInterval(function(){engine(2,0)},200);
         }
         if(e.keyCode == '80'){//P
-            clearInterval(engineOnP1);
-            engineOffP2 = setInterval(function(){engine(1,0)},200);
+            if($("#player2").attr("class") == "switch"){
+                switchFires('player2');   
+            }
         }
 
     }
@@ -861,7 +863,7 @@ function engine(player,type) {
                 if(state != "Green") {
                     penalites[name][state]++
                     // console.log("penalites[name][state] : " + penalites[name][state]);
-                    $("#"+name+"_"+state).text("Feux "+ state +" : " + penalites[name][state]);
+                    $("#"+name+"_"+state).text(penalites[name][state]);
                     // console.log(name + " est passe au feu : " + fires[name][i].state);
                 }
             }
@@ -1228,9 +1230,9 @@ function setTimeLeft(player){
     var timeLeft = 5;
     $("#"+player+"_attack").text(timeLeft);
     clearInterval(timeLeftInterval);
-    var d = new Date().getSeconds()+5;
+    
     timeLeftInterval = setInterval(function(){
-        timeLeft = d - new Date().getSeconds();
+        timeLeft --;
         $("#"+player+"_attack").text(timeLeft);
         if (timeLeft == 0) {
             clearInterval(timeLeftInterval);
@@ -1245,22 +1247,23 @@ function setTimeLeft(player){
     }
     .switch{
         background-color: green;
-        width: 200px;
+        width: 250px;
         height: 300px;
         border-radius: 25px;
         font-family: verdana;
         padding: 10px;
+        
     }
 
     .avoid{
         background-color: red;
-        width: 200px;
+        width: 250px;
         height: 300px;
         border-radius: 25px;
         font-family: verdana;
         padding: 10px;
-
-            }
+        
+    }
 
     .text{
         padding: 10px;
@@ -1270,32 +1273,37 @@ function setTimeLeft(player){
         font-size: 50pt;
     }
 
+    .left{
+        left:250px;
+    }
+
+    .right{
+        right:250px;
+    }
+
 </style>
 <body>
 <div onclick="launchGame();" id="game" style="cursor:pointer;color:white;background-color:grey;z-index:15;position:absolute;width:100%;height:100%;opacity:.8">
-<p style="border:5px white solid;color:white;font-size:75px;margin-left:500px;width:500px;font-family:verdana">START GAME</p>
+<p style="border:5px white solid;color:white;font-size:75px;margin-left:37%;margin-top:15%;width:500px;font-family:verdana">START GAME</p>
 </div>
 
-<div id="player1" class="switch" style="color:white;z-index:10;position:absolute;top:180px;left:250px">Player 1 : Z / S</div>
-<div id="player1_speed" class="text" style="color:white;z-index:10;position:absolute;top:200px;left:250px"></div>
-<div class="text" style="color:white;z-index:10;position:absolute;top:220px;left:250px">Distance parcourue : <span id="player1_dist" ></span></div>
-<div id="player1_Orange" class="text" style="color:white;z-index:10;position:absolute;top:240px;left:250px"></div>
-<div id="player1_Red" class="text" style="color:white;z-index:10;position:absolute;top:260px;left:250px"></div>
+
+<div id="player1" class="switch" style="color:white;z-index:10;position:absolute;top:180px;left:250px;"><b>Player 1 : Z / S</b></div>
+<div class="text left" style="color:white;z-index:10;position:absolute;top:220px">Vitesse : <span id="player1_speed" >0</span> km/h</div>
+<div class="text left" style="color:white;z-index:10;position:absolute;top:240px">Distance parcourue : <span id="player1_dist" ></span></div>
+<div class="text left" style="color:white;z-index:10;position:absolute;top:260px">Feux oranges : <span id="player1_Orange" ></span></div>
+<div class="text left" style="color:white;z-index:10;position:absolute;top:280px">Feux rouges : <span id="player1_Red" ></span></div>
 <div id="player1_attack" class="middle" style="color:white;z-index:10;position:absolute;top:350px;left:335px"></div>
 <input type="hidden" id="player1_speed" value="0"/>
 
-<div id="player2" class="avoid" style="color:white;z-index:10;position:absolute;top:180px;right:250px">Player 2 : O / L</div>
-<div id="player2_speed" class="text" style="color:white;z-index:10;position:absolute;top:200px;right:250px"></div>
-<div id="player2_dist" class="text" style="color:white;z-index:10;position:absolute;top:220px;right:250px"></div>
-<div id="player2_Orange" class="text" style="color:white;z-index:10;position:absolute;top:240px;right:250px"></div>
-<div id="player2_Red" class="text" style="color:white;z-index:10;position:absolute;top:260px;right:250px"></div>
+<div id="player2" class="avoid" style="color:white;z-index:10;position:absolute;top:180px;right:250px;"><b>Player 2 : O / L</b></div>
+<div class="text right" style="color:white;z-index:10;position:absolute;top:220px">Vitesse : <span id="player2_speed" >0</span> km/h</div>
+<div class="text right" style="color:white;z-index:10;position:absolute;top:240px">Distance parcourue : <span id="player2_dist" ></span></div>
+<div class="text right" style="color:white;z-index:10;position:absolute;top:260px">Feux oranges : <span id="player2_Orange" ></span></div>
+<div class="text right" style="color:white;z-index:10;position:absolute;top:280px">Feux rouges : <span id="player2_Red" ></span></div>
 <div id="player2_attack" class="middle" style="color:white;z-index:10;position:absolute;top:350px;right:335px"></div>
 <input type="hidden" id="player2_speed" value="0"/>
 
-<!-- <input style="z-index:10;position:absolute;top:100px;left:50%" type="button" value="Add Players" onclick="addPlayer(0);addPlayer(2);"/> -->
-<!-- <input style="z-index:10;position:absolute;top:125px;left:50%" type="button" value="Launch Fires" onclick="initFeux();timerSeq = setInterval(function(){switchFiresP1();},16000);"/> -->
-<input style="z-index:10;position:absolute;top:150px;left:25%" type="button" value="Switch fires" onclick="switchFires('player1');"/>
-<input style="z-index:10;position:absolute;top:175px;left:75%" type="button" value="Switch fires" onclick="switchFires('player2');"/>
 
 </body>
 
