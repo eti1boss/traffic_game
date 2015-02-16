@@ -361,7 +361,6 @@ function launchGame(){
     $("#counter").text((playTime) );
 
     var timerGame = setInterval(function(){
-        var now = new Date();
         playTime = playTime - 1;
         $("#counter").text((playTime) );
         if (playTime == 0){
@@ -376,6 +375,8 @@ function launchGame(){
             engineOffP1 = setInterval(function(){engine(1,0)},200);
 
             clearInterval(timerGame);
+
+            //Traitement du score
             var score1 = 0;
             var score2 = 0;
 
@@ -391,7 +392,7 @@ function launchGame(){
             score1 = distP1 - (feuRouge1*100) - (feuOrange1*50);
             score2 = distP2 - (feuRouge2*100) - (feuOrange2*50);
 
-
+            //affichage du score et du gagnant
             $("#player1_Score").text(score1);
             $("#player2_Score").text(score2);
 
@@ -403,6 +404,7 @@ function launchGame(){
                 $("#winner").text("none");
             }
 
+            //gestion des affichages et visibilités
            clearInterval(timeLeftInterval);
             $("#gameOver").css("z-index",15);
             $("#gameOver").css("visibility","visible");
