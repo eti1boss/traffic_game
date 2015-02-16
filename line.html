@@ -39,6 +39,9 @@
 <div id="player1_attack" class="middle" style="color:white;z-index:10;position:absolute;top:350px;left:155px"></div>
 
 <div id="counter" class="middle" style="color:white;z-index:10;position:absolute;top:20px;left:725px"></div>
+<div id="winnerDiv" class="middle" style="color:white;z-index:10;position:absolute;top:80px;left:380px;visibility: hidden">The winner is Player <span id="winner" ></span></div>
+<div id="score1" class="text middle" style="color:white;z-index:10;position:absolute;top:500px;visibility: hidden;left:155px">Score : <span id="player1_Score" ></span></div>
+<div id="score2" class="text middle" style="color:white;z-index:10;position:absolute;top:500px;visibility: hidden;right:155px">Score : <span id="player2_Score" ></span></div>
 
 
 <div id="player2" class="avoid" style="color:white;z-index:10;position:absolute;top:180px;right:50px;"><b>Player 2 : O / L</b></div>
@@ -389,11 +392,22 @@ function launchGame(){
             score2 = distP2 - (feuRouge2*100) - (feuOrange2*50);
 
 
+            $("#player1_Score").text(score1);
+            $("#player2_Score").text(score2);
 
-                //$("#"+obj.name+"_dist").text("distance parcourue : " + obj.dist);
+            if (score1 >= score2){
+                $("#winner").text(1);
+            }else{
+                $("#winner").text(2);
+            }
+
            clearInterval(timeLeftInterval);
             $("#gameOver").css("z-index",15);
             $("#gameOver").css("visibility","visible");
+            $("#score1").css("visibility","visible");
+            $("#score2").css("visibility","visible");
+            $("#winnerDiv").css("visibility","visible");
+            $("#counter").css("visibility","hidden");
             return;
         }
     },1000);
