@@ -27,7 +27,7 @@
 <p style="border:5px white solid;color:white;font-size:75px;margin-left:37%;margin-top:15%;width:500px;font-family:verdana">START GAME</p>
 </div>
 
-<div  id="gameOver" style="cursor:pointer;color:white;background-color:grey;z-index:-15;position:absolute;width:100%;height:100%;opacity:.8;visibility: hidden">
+<div onclick="document.location.reload();" id="gameOver" style="cursor:pointer;color:white;background-color:grey;z-index:-15;position:absolute;width:100%;height:100%;opacity:.8;visibility: hidden">
     <p style="border:5px white solid;color:white;font-size:75px;margin-left:37%;margin-top:15%;width:500px;font-family:verdana">GAME OVER</p>
 </div>
 
@@ -76,7 +76,7 @@
     var ogre;
     var delta;
     var clock = new THREE.Clock;
-    var playTime = 10;
+    var playTime = 60;
 
     function init() {
 
