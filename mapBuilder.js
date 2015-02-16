@@ -172,3 +172,150 @@ function map_rect(x, y, longueurX, longueurY, idWay1, idWay2){
 
     drawCurve(x1,y1,x2,y2,'HG', idWay1, idWay2);//LT
 }
+
+function drawRect(x1, y1, x2, y2, idWay1, idWay2){
+
+        v1 = new THREE.Vector3(x1,y1,0);
+        v2 = new THREE.Vector3(x1,y2,0);
+        v3 = new THREE.Vector3(x2,y1,0);
+        v4 = new THREE.Vector3(x2,y2,0);
+        
+        geom.vertices.push(v1);
+        geom.vertices.push(v2);
+        geom.vertices.push(v3);
+        geom.vertices.push(v4);
+
+        i = geom.vertices.length;
+        i1 = i-4; 
+        i2 = i-3;
+        i3 = i-2;
+        i4 = i-1;
+
+        geom.faces.push( new THREE.Face3( i1, i2, i3) );
+        geom.faces.push( new THREE.Face3( i2, i3, i4) );
+
+        differenceX = x2 - x1;
+        differenceY = y2 - y1;
+
+
+        if( Math.abs(differenceX) > Math.abs(differenceY) ){
+            if(differenceX > 0){
+                for(i=x1;i<x2;i+=2){
+                    ways[idWay1].push({x:i,y:7,z:(y2*-1)+(largeurRoute*.5),free:true});//75
+                    ways[idWay2].push({x:i,y:7,z:(y2*-1)+(largeurRoute*.5),free:true});//25
+                }
+            }
+            else{        
+                for(i=x1;i>x2;i-=2){
+                    ways[idWay1].push({x:i,y:7,z:(y2*-1)-largeurRoute*.5,free:true});
+                    ways[idWay2].push({x:i,y:7,z:(y2*-1)-largeurRoute*.5,free:true});
+                }
+
+            }
+        }
+        else{
+            if(differenceY > 0){
+                for(i=(y1*-1);i>(y2*-1);i-=2){
+                    ways[idWay1].push({x:x2+(largeurRoute*.5),y:7,z:i,free:true});
+                    ways[idWay2].push({x:x2+(largeurRoute*.5),y:7,z:i,free:true});
+                }
+
+            }
+            else{
+                for(i=(y1*-1);i<(y2*-1);i+=2){
+                    ways[idWay1].push({x:x2-(largeurRoute*.5),y:7,z:i,free:true});
+                    ways[idWay2].push({x:x2-(largeurRoute*.5),y:7,z:i,free:true});
+                }
+            }
+        }
+        // ways[idWay2].reverse();
+    }
+
+    function drawCurve(x1,y1,x2,y2,corner, sens, idWay1, idWay2){
+
+        if(corner == 'HD'){
+            xRot = 1;
+            yRot = -1;
+            xPos = 0;
+            yPos = y1+y2;
+        }
+        if(corner == 'BD'){
+            xRot = -1;
+            yRot = 1;
+            xPos = x1+x2;
+            yPos = 0;
+        }
+        if(corner == 'BG'){
+            xRot =  1;
+            yRot = -1;
+            xPos = 0;//x1;
+            yPos = y1+y2;
+        }
+        if(corner == 'HG'){
+            xRot = -1;
+            yRot = 1;
+            xPos = x1+x2;
+            yPos = 0;
+        }
+        nbVertice = geom.vertices.length;
+
+        for (var i = 0  ; i <= detailAngle ; i++) {
+            // console.log(i);
+            vTmp = new THREE.Vector3(
+                ((x2-x1)/2*(Math.cos(i*Math.PI/(2*detailAngle)))+x1)*xRot+xPos,  // x
+                ((y2-y1)/2*(Math.sin(i*Math.PI/(2*detailAngle)))+y1)*yRot+yPos,  // y
+                0);                                                         // z
+            geom.vertices.push(vTmp);
+            vTmp = new THREE.Vector3(
+                ((x2-x1)*(Math.cos(i*Math.PI/(2*detailAngle)))+x1)*xRot+xPos,  // x
+                ((y2-y1)*(Math.sin(i*Math.PI/(2*detailAngle)))+y1)*yRot+yPos,  // y
+                0);                                                         // z
+            geom.vertices.push(vTmp);
+
+        };
+
+        tmpArray = [];
+        for (var i = 0  ; i <= detailAngle ; i+=.25) {
+                x = ((x2-x1)*.75/*5/8*/*(Math.cos(i*Math.PI/(2*detailAngle)))+x1)*xRot+xPos;  // x
+                z = -((y2-y1)*.75/*5/8*/*(Math.sin(i*Math.PI/(2*detailAngle)))+y1)*yRot-yPos;  // y
+                y = 7;
+                rot = sens;
+                if(i==0 || i == detailAngle){
+                    rot = undefined;
+                }
+
+                tmpArray.push({x:x,y:7,z:z,rot:rot,free:true});
+
+           }
+           if(yRot*sens == -1){
+                tmpArray.reverse();         
+           }
+           // console.log(ways[idWay1].length);
+           ways[idWay1] = ways[idWay1].concat(tmpArray);
+           // console.log(ways[idWay1].length);
+
+        // tmpArray = [];
+        // for (var i = 0  ; i <= detailAngle ; i+=.25) {
+        //         x = ((x2-x1)*.75/*7/8*/*(Math.cos(i*Math.PI/(2*detailAngle)))+x1)*xRot+xPos;  // x
+        //         z = -((y2-y1)*.75/*7/8*/*(Math.sin(i*Math.PI/(2*detailAngle)))+y1)*yRot-yPos;  // y
+        //         y = 7;
+        //         rot = Math.cos(Math.PI*i)*sens;
+        //         if(i==0 || i == detailAngle){
+        //             rot = undefined;
+        //         }
+
+        //         tmpArray.push({x:x,y:7,z:z,rot:rot,free:true});
+
+        //    }
+
+        //    if(yRot*sens == -1){
+        //         tmpArray.reverse();         
+        //    }
+           ways[idWay2] = ways[idWay2].concat(tmpArray);
+
+
+
+        for (var i = nbVertice ; i < (detailAngle*2)+nbVertice ; i++) {
+            geom.faces.push( new THREE.Face3(i,i+1,i+2));
+        };
+    }

@@ -12,6 +12,11 @@
     <script src="physijs_worker.js"></script>
     <script src="ammo.js"></script>
     <script src="mapBuilder.js"></script>
+    <script src="fires.js"></script>
+    <script src="trafficControl.js"></script>
+    <script src="lights.js"></script>
+    <script src="carMovements.js"></script>
+    <script src="userActions.js"></script>
     <style>
         body {
             /* set margin to 0 and overflow to hidden, to go fullscreen */
@@ -28,7 +33,8 @@
     var spotLight;
     var cameraControl;
     var ambientLight;
-    var object ,cube, line, object2;
+    var map;
+    var object ,cube, line;
     var way = [];
     var way2 = [];
     var pos = 0;
@@ -48,6 +54,8 @@
     var fires;
     var timerSeq, timer11, timer12, timer21, timer22;
     var penalites = [];
+
+var timeLeftInterval;
    /**
      * Initializes the scene, camera and objects. Called when the window is
      * loaded by using window.onload (see below)
@@ -63,6 +71,7 @@
         fires = [];
 
         fires["player1"] = [];
+        fires["player2"] = [];
 
         penalites["player1"] = [];
         penalites["player1"]["Orange"]=0;
@@ -71,51 +80,28 @@
         penalites["player2"]["Orange"]=0;
         penalites["player2"]["Red"]=0;
 
-        fires["player2"] = [];
-
-        // geom = new THREE.Geometry(); 
-        // map_rect(0, 0, 40, 40, 0, 1);
-        // geom.computeFaceNormals();
-        // object = new Physijs.BoxMesh( geom, material);
-        // object.position.z = 0;
-        // object.rotation.x = Math.PI * -0.5;
-        // scene.add(object);
-
-        // geom = new THREE.Geometry(); 
-        // map_rect(40, 40, 40, 40, 2, 3);
-        // geom.computeFaceNormals();
-        // object2 = new Physijs.BoxMesh( geom, material);
-        // object2.position.z = 0;
-        // object2.rotation.x = Math.PI * -0.5;
-        // scene.add(object2);
 
         var material = Physijs.createMaterial(new THREE.MeshLambertMaterial({color: 0xbe7e0b,side : THREE.DoubleSide}));
         geom = new THREE.Geometry(); 
         map_custom1(0, 1);
         geom.computeFaceNormals();
-        object2 = new Physijs.BoxMesh( geom, material);
-        object2.position.z = 0;
-        object2.rotation.x = Math.PI * -0.5;
-        scene.add(object2);
+        map = new Physijs.BoxMesh( geom, material);
+        map.position.z = 0;
+        map.rotation.x = Math.PI * -0.5;
+        scene.add(map);
 
 
         var material = Physijs.createMaterial(new THREE.MeshLambertMaterial({color: 0x0b89be,side : THREE.DoubleSide}));
         geom = new THREE.Geometry(); 
         map_custom2(2, 3);
         geom.computeFaceNormals();
-        object2 = new Physijs.BoxMesh( geom, material);
-        object2.position.z = 0;
-        object2.rotation.x = Math.PI * -0.5;
-        object2.position.y=1;
-        scene.add(object2);
+        map = new Physijs.BoxMesh( geom, material);
+        map.position.z = 0;
+        map.rotation.x = Math.PI * -0.5;
+        map.position.y=1;
+        scene.add(map);
 
-
-
-
-        ways[1].reverse();
-        ways[3].reverse();
         
-
         addLights();
 
         ground_material = Physijs.createMaterial(
@@ -134,206 +120,12 @@
 
         scene.add(ground);
 
-        // for (var j = ways.length - 1; j >= 0; j--) {
-
-        //     for (var i = 0 ; i < ways[j].length; i++) {
-        //         var dotGeometry = new THREE.PlaneGeometry(1,1);
-        //         var dotMaterial = new THREE.MeshLambertMaterial({color:0x00ff00});
-        //         var dot = new THREE.Mesh(dotGeometry,dotMaterial);
-                
-        //         dot.rotation.x = -0.5 * Math.PI;
-        //         dot.position.x = ways[j][i].x;
-        //         dot.position.y = ways[j][i].y-6.9;
-        //         dot.position.z = ways[j][i].z;
-
-        //         scene.add(dot);
-        //     };
-
-        // };
 
 
 
 ////////////////////////////FIRE
 
-
-
-
-//On charge les materials
-    matRed = new THREE.MeshLambertMaterial(
-            {
-                map:THREE.ImageUtils.loadTexture(
-                        "assets/models/trafficlights/trafficlight_red3.png"),
-                morphTargets: true , morphNormals: true
-            }
-    );
-    matRed.name = "red";
-
-    matGreen = new THREE.MeshLambertMaterial(
-            {
-
-                map:THREE.ImageUtils.loadTexture(
-                        "assets/models/trafficlights/trafficlight_green3.png"),
-                morphTargets: true , morphNormals: true
-            }
-    );
-    matGreen.name = "green";
-
-    matOrange = new THREE.MeshLambertMaterial(
-            {
-                map:THREE.ImageUtils.loadTexture(
-                        "assets/models/trafficlights/trafficlight_orange3.png"),
-                morphTargets: true , morphNormals: true
-            }
-    );
-    matOrange.name = "orange";
-
-    matAll = new THREE.MeshLambertMaterial(
-            {
-                map:THREE.ImageUtils.loadTexture(
-                        "assets/models/trafficlights/trafficlight.png"),
-                morphTargets: true , morphNormals: true
-            }
-    );
-    matAll.name = "all";
-
-
-
-
-    ////On lance le modele////
-    loader = new THREE.JSONLoader();
-    loader.load('assets/models/trafficlights/trafficlight1.js', function (geometry){
-        geometry.computeMorphNormals();
-
-        mat = matAll;
-
-        mesh = new THREE.MorphBlendMesh(geometry,mat);
-        // mesh.position.x = 0;
-        mesh.position.y = 0;
-        // mesh.position.z = 0;
-
-        var actualtube = new THREE.CylinderGeometry(2, 2, 45, 45, 0, false);
-
-        var actualtubeMesh = new THREE.Mesh(actualtube, new THREE.MeshBasicMaterial(
-                { color: 0x333333, shading: THREE.FlatShading, side: THREE.DoubleSide, wireframe: false, transparent: false,
-                    vertexColors: THREE.FaceColors, overdraw: false
-                }));
-
-        actualtubeMesh.position.x = 0;
-        actualtubeMesh.position.y = -10;
-        actualtubeMesh.position.z = 0;
-
-        //55
-        //210
-        //300
-        //468
-        //565
-        //615
-
-        //ajout du tube dans le mesh principal
-        mesh.add(actualtubeMesh);
-
-        mesh.scale.x = .5;
-        mesh.scale.y = .5;
-        mesh.scale.z = .5;
-        mesh.name = "feu1;"
-
-        mesh.position.x = ways[0][59].x-11;
-        mesh.position.y = ways[0][59].y;
-        mesh.position.z = ways[0][59].z;
-        scene.add(mesh);
-
-        mesh2 = mesh.clone();
-        mesh2.name = "feu3";
-        mesh2.position.x = ways[0][212].x+11;
-        mesh2.position.y = ways[0][212].y;
-        mesh2.position.z = ways[0][212].z;
-        mesh2.rotation.y = Math.PI;
-        scene.add(mesh2);
-        
-        mesh3 = mesh.clone();
-        mesh3.name = "feu5";
-        mesh3.position.x = ways[0][302].x-11;
-        mesh3.position.y = ways[0][302].y;
-        mesh3.position.z = ways[0][302].z;
-        scene.add(mesh3);
-        
-        mesh4 = mesh.clone();
-        mesh4.name = "feu7";
-        mesh4.position.x = ways[0][475].x;
-        mesh4.position.y = ways[0][475].y;
-        mesh4.position.z = ways[0][475].z-11;
-        mesh4.rotation.y=-Math.PI*.5;
-        scene.add(mesh4);
-        
-        mesh5 = mesh.clone();
-        mesh5.name = "feu9";
-        mesh5.position.x = ways[0][568].x+11;
-        mesh5.position.y = ways[0][568].y;
-        mesh5.position.z = ways[0][568].z;
-        mesh5.rotation.y=Math.PI;
-        scene.add(mesh5);
-        
-        mesh6 = mesh.clone();
-        mesh6.name = "feu11";
-        mesh6.position.x = ways[0][618].x+11;
-        mesh6.position.y = ways[0][618].y;
-        mesh6.position.z = ways[0][618].z;
-        mesh6.rotation.y=Math.PI;
-        scene.add(mesh6);
-
-        //////////////////////////////
-
-
-
-        mesh7 = mesh.clone();
-        mesh7.name = "feu2";
-        mesh7.position.x = ways[2][79].x;
-        mesh7.position.y = ways[2][79].y;
-        mesh7.position.z = ways[2][79].z+11;
-        mesh7.rotation.y=Math.PI*.5;
-        scene.add(mesh7);
-
-        mesh8 = mesh.clone();
-        mesh8.name = "feu6";
-        mesh8.position.x = ways[2][119].x;
-        mesh8.position.y = ways[2][119].y;
-        mesh8.position.z = ways[2][119].z+11;
-        mesh8.rotation.y=Math.PI*.5;
-       scene.add(mesh8);
-
-        mesh9 = mesh.clone();
-        mesh9.name = "feu4";
-        mesh9.position.x = ways[2][149].x;
-        mesh9.position.y = ways[2][149].y;
-        mesh9.position.z = ways[2][149].z+11;
-        mesh9.rotation.y=Math.PI*.5;
-        scene.add(mesh9);
-
-        mesh10 = mesh.clone();
-        mesh10.name = "feu8";
-        mesh10.position.x = ways[2][621].x-20;
-        mesh10.position.y = ways[2][621].y;
-        mesh10.position.z = ways[2][621].z;
-        mesh10.rotation.y=Math.PI*1.2;
-        scene.add(mesh10);
-
-        mesh11 = mesh.clone();
-        mesh11.name = "feu10";
-        mesh11.position.x = ways[2][727].x;
-        mesh11.position.y = ways[2][727].y;
-        mesh11.position.z = ways[2][727].z-11;
-        mesh11.rotation.y=Math.PI*-.5;
-        scene.add(mesh11);
-
-        mesh12 = mesh.clone();
-        mesh12.name = "feu12";
-        mesh12.position.x = ways[2][29].x
-        mesh12.position.y = ways[2][29].y;
-        mesh12.position.z = ways[2][29].z+11;
-        mesh12.rotation.y=Math.PI*.5;
-        scene.add(mesh12);
-        
-});
+loadFires();
 
 
 ////////////////////////////FIRE
@@ -353,30 +145,7 @@ fires["player2"].push({pos:727, state:""});
 fires["player2"].push({pos:29, state:""});
 
 
-        // create a cube
-        var cubeGeometry = new THREE.BoxGeometry(10,10,10);
-
-        var myTexture = THREE.ImageUtils.loadTexture("assets/textures/wood.png");
-        var cubeMaterial = new THREE.MeshPhongMaterial({map:myTexture,transparent : true,opacity:1});
-
-        // var cubeMaterial = new THREE.MeshLambertMaterial({color: 'red',transparent : true,opacity:0.5});
-        cube = new Physijs.BoxMesh(cubeGeometry,cubeMaterial,10);
-        cube.castShadow = true;
-        cube.name = 'cube';
-        cube.position.set(10,10,50);
-
-        // add the cube to the scene
-        scene.add(cube);
-        // create a cube
-
-        cube.name='dae1';
-        // touareg('dae1',0);
-        // mclaren('dae2',0);
-
-
-        mclaren = scene.getObjectByName('dae1');
-        //collidableMeshList.push(mclaren);
-        //collidableMeshList.push(cube);
+addCar("mclaren",0);
 
 
         // create a camera, which defines where we're looking at.
@@ -393,12 +162,6 @@ fires["player2"].push({pos:29, state:""});
         camera.position.y = 140;
         camera.position.z = 344;
         
-        // camera.rotation.x = -.5;
-        // camera.rotation.y = .5;
-        // camera.rotation.z = .2;
-
-        // camera.up = new THREE.Vector3(0,1,0);
-        // camera.lookAt(new THREE.Vector3(100,100,100));
         cameraControl = new THREE.OrbitControls(camera);
 
         // setup the control of color, opacity, camera speed...
@@ -420,65 +183,40 @@ fires["player2"].push({pos:29, state:""});
 
     }
 
-function detectedCollision(objet, directionVector){
-    //console.log(directionVector);
-    for(var vertexIndex = 0; vertexIndex < objet.geometry.vertices.length;vertexIndex++){
-        var localVertex = objet.geometry.vertices[vertexIndex].clone();
-        var globalVertex = localVertex.applyMatrix4(objet.matrix);
-
-        var ray = new THREE.Raycaster(globalVertex, directionVector.clone().normalize());
-        var collisionResults = ray.intersectObjects(collidableMeshList);
-        if(collisionResults.length > 0 && collisionResults[0].distance < directionVector.length())
-            return true;
-    }
-    return false;
-}
-
 
     function addPlayer(idWay){
 
-        var obj = scene.getObjectByName('dae1');
+        var obj = scene.getObjectByName('mclaren');
         var obj2 = obj.clone();
         vname='player'+nb;
         nb++;
+        obj2.scale.x=.9;
+        obj2.scale.y=.9;
+        obj2.scale.z=.9;
         obj2.name=vname;
         obj2.speed = 0;
         obj2.pos=0;
         obj2.dist=0;
         obj2.position.x = ways[idWay][0].x;
-        // obj2.position.y = way2[pos].y-7.1;
+        // obj2.position.y = ways[2][pos].y;
         obj2.position.z = ways[idWay][0].z;
-        obj2.rotation.y = 0;
+        obj2.rotation.y = Math.PI*.5;
         vehicles.push({way:idWay,name:vname});
         scene.add(obj2);
-        collidableMeshList.push(obj2);
-        selectedObject=obj2;
+        // collidableMeshList.push(obj2);
+        // selectedObject=obj2;
     }
 
-    function addMovingCube(idWay){
-        var obj = scene.getObjectByName('dae1');
-        var movingCube = obj.clone();
-        vname='dae'+nb;
-        nb++;
-        movingCube.name=vname;
-        movingCube.pos=0;
-        movingCube.position.x = ways[idWay][0].x;
-        // obj2.position.y = way2[pos].y-7.1;
-        movingCube.position.z = ways[idWay][0].z;
-        movingCube.rotation.y = 0;
-        vehicles.push({way:idWay,name:vname});
-        scene.add(movingCube);
-        collidableMeshList.push(movingCube);
-        selectedObject=movingCube;
-    }
 
-    function touareg(name,pos){
-
+    function addCar(name,pos){
+    //mclaren
+    //touareg
         loader = new THREE.ColladaLoader();
-        loader.load('assets/models/touareg.dae',function colladaReady( collada ){
+        loader.load('assets/models/mclaren/mclaren.dae',function colladaReady( collada ){
             var obj = collada.scene;
             // skin = collada.skins [ 0 ];
-            obj.scale.x = obj.scale.y = obj.scale.z = .005;
+            obj.scale.x = obj.scale.y = obj.scale.z = .01;
+            // obj.scale.x = obj.scale.y = obj.scale.z = .005;//touareg
 
             //i'll add code here later for extra bump mapping on webgl versions
 
@@ -488,580 +226,22 @@ function detectedCollision(objet, directionVector){
             obj.receiveShadow = true;
             // obj.rotation.y = Math.PI * 1;
 
-            obj.position.x = way2[pos].x;
-            obj.position.y = way2[pos].y-7.1;
-            obj.position.z = way2[pos].z;
+            obj.position.x = ways[2][pos].x;
+            obj.position.y = ways[2][pos].y-7.2;
+            obj.position.z = ways[2][pos].z;
             obj.pos=pos;
             obj.name = name;
 
-            scene.add( obj );
-            vehicles.push({way:2,name:name});
-        });
-
-    }
-
-    function mclaren(name,pos){
-
-        loader = new THREE.ColladaLoader();
-        loader.load('assets/models/mclaren/mclaren.dae',function colladaReady( collada ){
-            var obj = collada.scene;
-            // skin = collada.skins [ 0 ];
-            obj.scale.x = obj.scale.y = obj.scale.z = .9;
-
-            //i'll add code here later for extra bump mapping on webgl versions
-
-            //usefull for shadows on webgl version
-            // daemesh = player.children[0];
-            obj.castShadow = true;
-            obj.receiveShadow = true;
-            obj.rotation.y = Math.PI * .5;
-
-            obj.position.x = way1[pos].x;
-            obj.position.y = way1[pos].y-7.1;
-            obj.position.z = way1[pos].z;
-            obj.pos=pos;
-            obj.name = name;
             scene.add( obj );
             // vehicles.push({way:0,name:name});
         });
 
     }
 
-    window.onkeydown = checkKey;
 
-    var engineOnP1, engineOffP1, engineOnP2, engineOffP2;
 
-function engine(player,type) {
-    speed = parseFloat($("#player"+player+"_speed").val());
 
-    console.log('parseFloat($("#player_"+name+"_speed").val());');
-
-    if(player == 1){
-        speedP1 = parseFloat(scene.getObjectByName('player1').speed);
-        if(type==1){
-            if(speedP1 >= speed ) {
-                clearInterval(engineOnP1);
-                speedP1 = speed;
-            } else {
-                speedP1 += .1 ;
-            }
-        } else {
-            if(speedP1 <= speed ) {
-                clearInterval(engineOffP1);
-                speedP1 = speed;
-            } else {
-                if(speed == 0) {
-                    speedP1 -= .5 ;
-                } else {
-                    speedP1 -= .25 ;
-                }
-            }   
-        }
-        scene.getObjectByName('player1').speed = speedP1;
-        $("#player1_speed").text(Math.floor(speedP1*50));
-    }
-
-    if(player == 2){
-        speedP2 = parseFloat(scene.getObjectByName('player2').speed);
-        if(type==1){
-            if(speedP2 >= speed ) {
-                clearInterval(engineOnP2);
-                speedP2 = speed;
-            } else {
-                speedP2 += .1 ;
-            }
-        } else {
-            if(speedP2 <= speed ) {
-                clearInterval(engineOffP2);
-                speedP2 = speed;
-            } else {
-                if(speed == 0) {
-                    speedP2 -= .5 ;
-                } else {
-                    speedP2 -= .25 ;
-                }
-            }   
-        }
-        scene.getObjectByName('player2').speed = speedP2;
-        $("#player2_speed").text(Math.floor(speedP2*50));
-    }
-}
     
-    function initFeux(){
-
-        mesh.material = matGreen;
-        mesh2.material = matRed;
-        mesh3.material = matRed;
-        mesh4.material = matGreen;
-        mesh5.material = matGreen;
-        mesh6.material = matRed;
-        mesh7.material = matRed;
-        mesh8.material = matGreen;
-        mesh9.material = matGreen;
-        mesh10.material = matRed;
-        mesh11.material = matRed;
-        mesh12.material = matGreen;
-
-
-        switchFiresP1();
-
-        fires["player1"][0].state="Green";
-        fires["player1"][1].state="Red";
-        fires["player1"][2].state="Red";
-        fires["player1"][3].state="Green";
-        fires["player1"][4].state="Green";
-        fires["player1"][5].state="Red";
-        fires["player2"][0].state="Red";
-        fires["player2"][1].state="Green";
-        fires["player2"][2].state="Green";
-        fires["player2"][3].state="Red";
-        fires["player2"][4].state="Red";
-        fires["player2"][5].state="Green";
-    }
-
-    function seq1Green(){
-        mesh.material = matGreen;
-        mesh4.material = matGreen;
-        mesh5.material = matGreen;
-        mesh8.material = matGreen;
-        mesh9.material = matGreen;
-        mesh12.material = matGreen;
-        fires["player1"][0].state = fires["player1"][3].state = fires["player1"][4].state = fires["player2"][1].state = fires["player2"][2].state = fires["player2"][5].state = "Green";
-    }
-    function seq1Orange(){
-        mesh.material = matOrange;
-        mesh4.material = matOrange;
-        mesh5.material = matOrange;
-        mesh8.material = matOrange;
-        mesh9.material = matOrange;
-        mesh12.material = matOrange;
-        fires["player1"][0].state = fires["player1"][3].state = fires["player1"][4].state = fires["player2"][1].state = fires["player2"][2].state = fires["player2"][5].state = "Orange";
-    }
-    function seq1Red(){
-        mesh.material = matRed;
-        mesh4.material = matRed;
-        mesh5.material = matRed;
-        mesh8.material = matRed;
-        mesh9.material = matRed;
-        mesh12.material = matRed;
-        fires["player1"][0].state = fires["player1"][3].state = fires["player1"][4].state = fires["player2"][1].state = fires["player2"][2].state = fires["player2"][5].state = "Red";
-    }
-    function seq2Green(){
-        mesh2.material = matGreen;
-        mesh3.material = matGreen;
-        mesh6.material = matGreen;
-        mesh7.material = matGreen;
-        mesh10.material = matGreen;
-        mesh11.material = matGreen;
-        fires["player1"][1].state = fires["player1"][2].state = fires["player1"][5].state = fires["player2"][0].state = fires["player2"][3].state = fires["player2"][4].state = "Green";
-    }
-    function seq2Orange(){
-        mesh2.material = matOrange;
-        mesh3.material = matOrange;
-        mesh6.material = matOrange;
-        mesh7.material = matOrange;
-        mesh10.material = matOrange;
-        mesh11.material = matOrange;
-        fires["player1"][1].state = fires["player1"][2].state = fires["player1"][5].state = fires["player2"][0].state = fires["player2"][3].state = fires["player2"][4].state = "Orange";
-
-    }
-    function seq2Red(){
-        mesh2.material = matRed;
-        mesh3.material = matRed;
-        mesh6.material = matRed;
-        mesh7.material = matRed;
-        mesh10.material = matRed;
-        mesh11.material = matRed;
-        fires["player1"][1].state = fires["player1"][2].state = fires["player1"][5].state = fires["player2"][0].state = fires["player2"][3].state = fires["player2"][4].state = "Red";
-
-    }
-
-    function switchFiresP1(){
-        seq1Green();
-
-        timer11 = setTimeout(function(){
-            seq1Orange();
-        },5000);
-
-        timer12 = setTimeout(function(){
-            seq1Red();
-        },8000);
-
-        //////////////////////
-
-        seq2Red();
-
-        timer21 = setTimeout(function(){
-            seq2Green();
-        },8000);
-
-        timer22 = setTimeout(function(){
-            seq2Orange();
-        },13000);
-
-    }
-
-    function switchFiresP2(){
-        seq2Green();
-
-        timer11 = setTimeout(function(){
-            seq2Orange();
-        },5000);
-
-        timer12 = setTimeout(function(){
-            seq2Red();
-        },8000);
-
-        //////////////////////
-
-        seq1Red();
-
-        timer21 = setTimeout(function(){
-            seq1Green();
-        },8000);
-
-        timer22 = setTimeout(function(){
-            seq1Orange();
-        },13000);
-    }
-
-    function switchFires(player){
-        clearInterval(timerSeq);
-        clearTimeout(timer11);
-        clearTimeout(timer12);
-        clearTimeout(timer21);
-        clearTimeout(timer22);
-
-        if(player == "player1") {
-            if( (mesh.material.name == "orange" || mesh.material.name == "red") && mesh2.material.name != "orange" ) {
-                switchFiresP1();
-                timerSeq = setInterval(function(){switchFiresP1();},16000);
-            } else  {
-                switchFiresP2();
-                timerSeq = setInterval(function(){switchFiresP2();},16000);
-            }            
-        }
-        if(player == "player2") {
-            if( (mesh7.material.name == "orange" || mesh7.material.name == "red") && mesh8.material.name != "orange" ) {
-                switchFiresP2();
-                timerSeq = setInterval(function(){switchFiresP2();},16000);
-            } else {
-                switchFiresP1();
-                timerSeq = setInterval(function(){switchFiresP1();},16000);
-            }
-        }
-
-
-    }
-
-    function checkKey(e){
-        e = e || window.event;
-
-        if(e.keyCode == '90'){//Z
-            clearInterval(engineOnP1);
-            clearInterval(engineOffP1);
-            currentSpeed = $("#player1_speed").val();
-            if( currentSpeed == 0) {
-                currentSpeed = .5;
-            }
-            else if( currentSpeed == .5) {
-                currentSpeed = 1;
-            }
-            else if( currentSpeed == 1) {
-                currentSpeed = 1.5;
-            }
-            else if( currentSpeed == 1.5) {
-                currentSpeed = 2;
-            }
-            $("#player1_speed").val(currentSpeed);
-            engineOnP1 = setInterval(function(){engine(1,1)},200);
-        }
-        if(e.keyCode == '83'){//S
-            clearInterval(engineOnP1);
-            clearInterval(engineOffP1);
-            currentSpeed = $("#player1_speed").val();
-            if( currentSpeed == 2) {
-                currentSpeed = 1.5;
-            }
-            else if( currentSpeed == 1.5) {
-                currentSpeed = 1;
-            }
-            else if( currentSpeed == 1) {
-                currentSpeed = .5;
-            }
-            else if( currentSpeed == .5) {
-                currentSpeed = 0;
-            }
-            $("#player1_speed").val(currentSpeed);
-            engineOffP1 = setInterval(function(){engine(1,0)},200);
-        }
-        if(e.keyCode == '65'){//A
-            if($("#player1").attr("class") == "switch"){
-                switchFires('player1');   
-            }
-        }
-
-        if(e.keyCode == '79'){//O
-            clearInterval(engineOnP2);
-            clearInterval(engineOffP2);
-            currentSpeed = $("#player2_speed").val();
-            if( currentSpeed == 0) {
-                currentSpeed = .5;
-            }
-            else if( currentSpeed == .5) {
-                currentSpeed = 1;
-            }
-            else if( currentSpeed == 1) {
-                currentSpeed = 1.5;
-            }
-            else if( currentSpeed == 1.5) {
-                currentSpeed = 2;
-            }
-            $("#player2_speed").val(currentSpeed);
-            engineOnP2 = setInterval(function(){engine(2,1)},200);
-        }
-        if(e.keyCode == '76'){//L
-            clearInterval(engineOnP2);
-            clearInterval(engineOffP2);
-            currentSpeed = $("#player2_speed").val();
-            if( currentSpeed == 2) {
-                currentSpeed = 1.5;
-            }
-            else if( currentSpeed == 1.5) {
-                currentSpeed = 1;
-            }
-            else if( currentSpeed == 1) {
-                currentSpeed = .5;
-            }
-            else if( currentSpeed == .5) {
-                currentSpeed = 0;
-            }
-            $("#player2_speed").val(currentSpeed);
-            engineOffP2 = setInterval(function(){engine(2,0)},200);
-        }
-        if(e.keyCode == '80'){//P
-            if($("#player2").attr("class") == "switch"){
-                switchFires('player2');   
-            }
-        }
-
-    }
-
-    function go(wayID,name){
-        var obj = scene.getObjectByName(name);
-
-
-        if(name=='dae3'){
-            inc=0;
-        } else {
-            inc = 0; //pour faire varier la vitesse en fonction des objets
-        }
-
-        for (var i = 0; i <= 5; i++) {
-            if( obj.pos >= fires[name][i].pos  && obj.pos <= fires[name][i].pos ){
-                state = fires[name][i].state;
-                if(state != "Green") {
-                    penalites[name][state]++
-                    // console.log("penalites[name][state] : " + penalites[name][state]);
-                    $("#"+name+"_"+state).text(penalites[name][state]);
-                    // console.log(name + " est passe au feu : " + fires[name][i].state);
-                }
-            }
-        }
-
-
-        for (var i = 0; i < obj.speed+inc; i++) {
-            // console.log(obj.pos);
-
-            if(obj.pos >= ways[wayID].length){
-                obj.pos = 0;
-            }
-
-
-
-            var direction = new THREE.Vector3(
-                ways[wayID][obj.pos].x,
-                ways[wayID][obj.pos].y-7.1,
-                ways[wayID][obj.pos].z
-                );
-
-            
-            obj.position.x = direction.x;
-            obj.position.y = direction.y;
-            obj.position.z = direction.z;
-
-            if(ways[wayID][obj.pos].rot != undefined){
-                sens = ways[wayID][obj.pos].rot;
-                // if(wayID%2 == 0){
-                if(sens == 1){
-                    obj.rotation.y-=((Math.PI*.5)/39);
-                }
-                else{
-                    obj.rotation.y+=((Math.PI*.5)/39);   
-                }
-            }
-            else{
-                if(-obj.rotation.y > 1.5 && -obj.rotation.y < 1.6 ) obj.rotation.y = -Math.PI* .5;
-                if(-obj.rotation.y > 3.1 && -obj.rotation.y < 3.2 ) obj.rotation.y = -Math.PI* 1;
-                if(-obj.rotation.y > 4.7 && -obj.rotation.y < 4.8 ) obj.rotation.y = -Math.PI* 1.5;
-                if(-obj.rotation.y > 6.2 && -obj.rotation.y < 6.3 ) obj.rotation.y = -Math.PI* 2;
-            }       
-            if(obj.rotation.y <= -Math.PI*2){
-                obj.rotation.y=0;
-            }
-            obj.pos+=1;
-            obj.dist++;
-        };
-        $("#"+obj.name+"_dist").text(obj.dist);
-    }
-
-    function drawRect(x1, y1, x2, y2, idWay1, idWay2){
-
-        v1 = new THREE.Vector3(x1,y1,0);
-        v2 = new THREE.Vector3(x1,y2,0);
-        v3 = new THREE.Vector3(x2,y1,0);
-        v4 = new THREE.Vector3(x2,y2,0);
-        
-        geom.vertices.push(v1);
-        geom.vertices.push(v2);
-        geom.vertices.push(v3);
-        geom.vertices.push(v4);
-
-        i = geom.vertices.length;
-        i1 = i-4; 
-        i2 = i-3;
-        i3 = i-2;
-        i4 = i-1;
-
-        geom.faces.push( new THREE.Face3( i1, i2, i3) );
-        geom.faces.push( new THREE.Face3( i2, i3, i4) );
-
-        differenceX = x2 - x1;
-        differenceY = y2 - y1;
-
-
-        if( Math.abs(differenceX) > Math.abs(differenceY) ){
-            if(differenceX > 0){
-                for(i=x1;i<x2;i+=2){
-                    ways[idWay1].push({x:i,y:7,z:(y2*-1)+(largeurRoute*.5),free:true});//75
-                    ways[idWay2].push({x:i,y:7,z:(y2*-1)+(largeurRoute*.5),free:true});//25
-                }
-            }
-            else{        
-                for(i=x1;i>x2;i-=2){
-                    ways[idWay1].push({x:i,y:7,z:(y2*-1)-largeurRoute*.5,free:true});
-                    ways[idWay2].push({x:i,y:7,z:(y2*-1)-largeurRoute*.5,free:true});
-                }
-
-            }
-        }
-        else{
-            if(differenceY > 0){
-                for(i=(y1*-1);i>(y2*-1);i-=2){
-                    ways[idWay1].push({x:x2+(largeurRoute*.5),y:7,z:i,free:true});
-                    ways[idWay2].push({x:x2+(largeurRoute*.5),y:7,z:i,free:true});
-                }
-
-            }
-            else{
-                for(i=(y1*-1);i<(y2*-1);i+=2){
-                    ways[idWay1].push({x:x2-(largeurRoute*.5),y:7,z:i,free:true});
-                    ways[idWay2].push({x:x2-(largeurRoute*.5),y:7,z:i,free:true});
-                }
-            }
-        }
-        // ways[idWay2].reverse();
-    }
-
-    function drawCurve(x1,y1,x2,y2,corner, sens, idWay1, idWay2){
-
-        if(corner == 'HD'){
-            xRot = 1;
-            yRot = -1;
-            xPos = 0;
-            yPos = y1+y2;
-        }
-        if(corner == 'BD'){
-            xRot = -1;
-            yRot = 1;
-            xPos = x1+x2;
-            yPos = 0;
-        }
-        if(corner == 'BG'){
-            xRot =  1;
-            yRot = -1;
-            xPos = 0;//x1;
-            yPos = y1+y2;
-        }
-        if(corner == 'HG'){
-            xRot = -1;
-            yRot = 1;
-            xPos = x1+x2;
-            yPos = 0;
-        }
-        nbVertice = geom.vertices.length;
-
-        for (var i = 0  ; i <= detailAngle ; i++) {
-            // console.log(i);
-            vTmp = new THREE.Vector3(
-                ((x2-x1)/2*(Math.cos(i*Math.PI/(2*detailAngle)))+x1)*xRot+xPos,  // x
-                ((y2-y1)/2*(Math.sin(i*Math.PI/(2*detailAngle)))+y1)*yRot+yPos,  // y
-                0);                                                         // z
-            geom.vertices.push(vTmp);
-            vTmp = new THREE.Vector3(
-                ((x2-x1)*(Math.cos(i*Math.PI/(2*detailAngle)))+x1)*xRot+xPos,  // x
-                ((y2-y1)*(Math.sin(i*Math.PI/(2*detailAngle)))+y1)*yRot+yPos,  // y
-                0);                                                         // z
-            geom.vertices.push(vTmp);
-
-        };
-
-        tmpArray = [];
-        for (var i = 0  ; i <= detailAngle ; i+=.25) {
-                x = ((x2-x1)*.75/*5/8*/*(Math.cos(i*Math.PI/(2*detailAngle)))+x1)*xRot+xPos;  // x
-                z = -((y2-y1)*.75/*5/8*/*(Math.sin(i*Math.PI/(2*detailAngle)))+y1)*yRot-yPos;  // y
-                y = 7;
-                rot = sens;
-                if(i==0 || i == detailAngle){
-                    rot = undefined;
-                }
-
-                tmpArray.push({x:x,y:7,z:z,rot:rot,free:true});
-
-           }
-           if(yRot*sens == -1){
-                tmpArray.reverse();         
-           }
-           // console.log(ways[idWay1].length);
-           ways[idWay1] = ways[idWay1].concat(tmpArray);
-           // console.log(ways[idWay1].length);
-
-        // tmpArray = [];
-        // for (var i = 0  ; i <= detailAngle ; i+=.25) {
-        //         x = ((x2-x1)*.75/*7/8*/*(Math.cos(i*Math.PI/(2*detailAngle)))+x1)*xRot+xPos;  // x
-        //         z = -((y2-y1)*.75/*7/8*/*(Math.sin(i*Math.PI/(2*detailAngle)))+y1)*yRot-yPos;  // y
-        //         y = 7;
-        //         rot = Math.cos(Math.PI*i)*sens;
-        //         if(i==0 || i == detailAngle){
-        //             rot = undefined;
-        //         }
-
-        //         tmpArray.push({x:x,y:7,z:z,rot:rot,free:true});
-
-        //    }
-
-        //    if(yRot*sens == -1){
-        //         tmpArray.reverse();         
-        //    }
-           ways[idWay2] = ways[idWay2].concat(tmpArray);
-
-
-
-        for (var i = nbVertice ; i < (detailAngle*2)+nbVertice ; i++) {
-            geom.faces.push( new THREE.Face3(i,i+1,i+2));
-        };
-    }
-
    
 
 
@@ -1091,14 +271,8 @@ function engine(player,type) {
      */
     function render() {
 
-        var rotSpeed = control.rotationSpeed;
-        // camera.position.x = camera.position.x * Math.cos(rotSpeed) + camera.position.z * Math.sin(rotSpeed);
-        // camera.position.z = camera.position.z * Math.cos(rotSpeed) - camera.position.x * Math.sin(rotSpeed);
-        // camera.position.y = camera.position.y * Math.cos(rotSpeed) - camera.position.z * Math.sin(rotSpeed);
+
         camera.lookAt(scene.position);
-
-
-        // ambientLight.color = new THREE.Color(control.color);
 
         // FPS update 
         stats.update();
@@ -1134,72 +308,16 @@ function getRandomColor() {
         renderer.setSize(window.innerWidth, window.innerHeight);
     }
 
+    window.onkeydown = checkKey;
+
+    var engineOnP1, engineOffP1, engineOnP2, engineOffP2;
+
     // calls the init function when the window is done loading.
     window.onload = init;
     // calls the handleResize function when the window is resized
     window.addEventListener('resize', handleResize, false);
 
-    function addLights(){
-        // ambientLight = new THREE.AmbientLight(0xffffff);
-        // ambientLight.name='ambient';
-        // scene.add(ambientLight);
-
-        dirLight = new THREE.DirectionalLight(0xf54123,.4);
-        dirLight.position.set(0,500,0);
-        dirLight.target.position.set(0,0,0);
-        scene.add(dirLight);
-
-        dirLight1 = new THREE.DirectionalLight(0xcccc11,.4);
-        dirLight1.position.set(0,-500,0);
-        dirLight1.target.position.set(0,0,0);
-        scene.add(dirLight1);
-
-        dirLight2 = new THREE.DirectionalLight(0xeeeeef,.5);
-        dirLight2.position.set(50,50,0);
-        dirLight2.target.position.set(0,50,0);
-        scene.add(dirLight2);
-
-        dirLight3 = new THREE.DirectionalLight(0xeeeeef,.5);
-        dirLight3.position.set(0,50,50);
-        dirLight3.target.position.set(0,50,0);
-        scene.add(dirLight3);
-
-        dirLight4 = new THREE.DirectionalLight(0xeeeeef,.5);
-        dirLight4.position.set(-50,50,0);
-        dirLight4.target.position.set(0,50,0);
-        scene.add(dirLight4);
-
-        dirLight45 = new THREE.DirectionalLight(0xeeeeef,.5);
-        dirLight45.position.set(0,50,-50);
-        dirLight45.target.position.set(0,50,0);
-        scene.add(dirLight45);
-
-        // create light
-        spotLight = new THREE.SpotLight(0xffffff,.75);
-        spotLight.position.set(0,500,0);
-        spotLight.target.position.set(120,0,120);
-        scene.add(spotLight);
-
-        // spotLight2 = new THREE.SpotLight(0xff0000,.7);
-        // spotLight2.position.set(100,50,0);
-        // spotLight2.target.position.set(20,0,0);
-        // scene.add(spotLight2);
-
-        // spotLight3 = new THREE.SpotLight(0x00ff00,.7);
-        // spotLight3.position.set(0,50,100);
-        // spotLight3.target.position.set(0,0,20);
-        // scene.add(spotLight3);
-
-        // spotLight4 = new THREE.SpotLight(0x0000ff,.7);
-        // spotLight4.position.set(-100,50,-100);
-        // spotLight4.target.position.set(-20,0,-20);
-        // scene.add(spotLight4);
-
-        // spotLight4 = new THREE.SpotLight(0xffff00,.7);
-        // spotLight4.position.set(50,50,50);
-        // spotLight4.target.position.set(20,0,20);
-        // scene.add(spotLight4);
-    }
+    
 function launchGame(){
     $("#game").css("z-index",-1);
     addPlayer(0);addPlayer(2);
@@ -1209,7 +327,6 @@ function launchGame(){
 
 }
 
-var timeLeftInterval;
 
 
 function setTimeLeft(player){
@@ -1247,6 +364,7 @@ function setTimeLeft(player){
     }
     .switch{
         background-color: green;
+        opacity: .7;
         width: 250px;
         height: 300px;
         border-radius: 25px;
@@ -1257,6 +375,7 @@ function setTimeLeft(player){
 
     .avoid{
         background-color: red;
+        opacity: .7;
         width: 250px;
         height: 300px;
         border-radius: 25px;
@@ -1274,11 +393,11 @@ function setTimeLeft(player){
     }
 
     .left{
-        left:250px;
+        left:50px;
     }
 
     .right{
-        right:250px;
+        right:50px;
     }
 
 </style>
@@ -1288,21 +407,19 @@ function setTimeLeft(player){
 </div>
 
 
-<div id="player1" class="switch" style="color:white;z-index:10;position:absolute;top:180px;left:250px;"><b>Player 1 : Z / S</b></div>
+<div id="player1" class="switch" style="color:white;z-index:10;position:absolute;top:180px;left:50px;"><b>Player 1 : Z / S</b></div>
 <div class="text left" style="color:white;z-index:10;position:absolute;top:220px">Vitesse : <span id="player1_speed" >0</span> km/h</div>
 <div class="text left" style="color:white;z-index:10;position:absolute;top:240px">Distance parcourue : <span id="player1_dist" ></span></div>
 <div class="text left" style="color:white;z-index:10;position:absolute;top:260px">Feux oranges : <span id="player1_Orange" ></span></div>
 <div class="text left" style="color:white;z-index:10;position:absolute;top:280px">Feux rouges : <span id="player1_Red" ></span></div>
-<div id="player1_attack" class="middle" style="color:white;z-index:10;position:absolute;top:350px;left:335px"></div>
-<input type="hidden" id="player1_speed" value="0"/>
+<div id="player1_attack" class="middle" style="color:white;z-index:10;position:absolute;top:350px;left:155px"></div>
 
-<div id="player2" class="avoid" style="color:white;z-index:10;position:absolute;top:180px;right:250px;"><b>Player 2 : O / L</b></div>
+<div id="player2" class="avoid" style="color:white;z-index:10;position:absolute;top:180px;right:50px;"><b>Player 2 : O / L</b></div>
 <div class="text right" style="color:white;z-index:10;position:absolute;top:220px">Vitesse : <span id="player2_speed" >0</span> km/h</div>
 <div class="text right" style="color:white;z-index:10;position:absolute;top:240px">Distance parcourue : <span id="player2_dist" ></span></div>
 <div class="text right" style="color:white;z-index:10;position:absolute;top:260px">Feux oranges : <span id="player2_Orange" ></span></div>
 <div class="text right" style="color:white;z-index:10;position:absolute;top:280px">Feux rouges : <span id="player2_Red" ></span></div>
-<div id="player2_attack" class="middle" style="color:white;z-index:10;position:absolute;top:350px;right:335px"></div>
-<input type="hidden" id="player2_speed" value="0"/>
+<div id="player2_attack" class="middle" style="color:white;z-index:10;position:absolute;top:350px;right:155px"></div>
 
 
 </body>
