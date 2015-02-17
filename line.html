@@ -24,7 +24,7 @@
 
 <body>
 <div onclick="launchGame();" id="game" style="cursor:pointer;color:white;background-color:grey;z-index:15;position:absolute;width:100%;height:100%;opacity:.8">
-<p style="border:5px white solid;color:white;font-size:75px;margin-left:37%;margin-top:15%;width:500px;font-family:verdana">START GAME</p>
+<p style="border:5px white solid;color:white;font-size:75px;margin-left:37%;margin-top:15%;width:500px;font-family:verdana">Please wait..</p>
 </div>
 
 <div onclick="document.location.reload();" id="gameOver" style="cursor:pointer;color:white;background-color:grey;z-index:-15;position:absolute;width:100%;height:100%;opacity:.8;visibility: hidden">
@@ -150,18 +150,19 @@
         fires["player2"].push({pos:727, state:""});
         fires["player2"].push({pos:29, state:""});
 
-        if( window.location.search.substring(1) == "cube" ){
+        type = window.location.search.substring(1);
+
+        if( type == "cube" ){
          addCube();        
         }
-        if( window.location.search.substring(1) == "mclaren" ){
+        if( type == "mclaren" ){
         addCar("model",0);    
         }
-        if( window.location.search.substring(1) == "ogre" ){
+        if( type == "ogre" ){
         addOgre();    
         }
 
-        type = window.location.search.substring(1);
-
+        
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 
         camera.position.x = 270;
@@ -209,6 +210,7 @@ function addOgre(){
         ogre.playAnimation('stand', 10);
 
         scene.add(ogre); 
+            $("#game").children().text("START GAME");
 
     });
 }
@@ -227,6 +229,7 @@ function addCube(){
 
         // add the cube to the scene
         scene.add(cube);
+            $("#game").children().text("START GAME");
 }
 
     function addPlayer(idWay){
@@ -280,6 +283,7 @@ function addCube(){
             obj.name = name;
 
             scene.add( obj );
+            $("#game").children().text("START GAME");
         });
 
     }
@@ -357,69 +361,74 @@ function getRandomColor() {
 
     
 function launchGame(){
-    $("#game").css("z-index",-1);
-    addPlayer(0);addPlayer(2);
-    initFeux();timerSeq = setInterval(function(){switchFiresP1();},16000);
 
-    setTimeLeft("player1");
-    $("#counter").text((playTime) );
+    if ($("#game").children().text() == "START GAME" ){
+        $("#game").css("z-index",-1);
+        addPlayer(0);addPlayer(2);
+        initFeux();timerSeq = setInterval(function(){switchFiresP1();},16000);
 
-    var timerGame = setInterval(function(){
-        playTime = playTime - 1;
+        setTimeLeft("player1");
         $("#counter").text((playTime) );
-        if (playTime == 0){
-            clearInterval(nextTimeOut);
-            currentSpeed = 0;
-            clearInterval(engineOnP1);
-            clearInterval(engineOffP1);
-            clearInterval(engineOnP2);
-            clearInterval(engineOffP2);
-            $("#player2_speed").val(currentSpeed);
-            $("#player1_speed").val(currentSpeed);
-            engineOffP2 = setInterval(function(){engine(2,0)},200);
-            engineOffP1 = setInterval(function(){engine(1,0)},200);
 
-            clearInterval(timerGame);
+        var timerGame = setInterval(function(){
+            playTime = playTime - 1;
+            $("#counter").text((playTime) );
+            if (playTime == 0){
+                clearInterval(nextTimeOut);
+                currentSpeed = 0;
+                clearInterval(engineOnP1);
+                clearInterval(engineOffP1);
+                clearInterval(engineOnP2);
+                clearInterval(engineOffP2);
+                $("#player2_speed").val(currentSpeed);
+                $("#player1_speed").val(currentSpeed);
+                engineOffP2 = setInterval(function(){engine(2,0)},200);
+                engineOffP1 = setInterval(function(){engine(1,0)},200);
 
-            //Traitement du score
-            var score1 = 0;
-            var score2 = 0;
+                clearInterval(timerGame);
 
-            var distP1 = $('#player1_dist').text();
-            var distP2 = $('#player2_dist').text();
+                //Traitement du score
+                var score1 = 0;
+                var score2 = 0;
 
-            var feuRouge1 =  $('#player1_Red').text();
-            var feuRouge2 =  $('#player2_Red').text();
+                var distP1 = $('#player1_dist').text();
+                var distP2 = $('#player2_dist').text();
 
-            var feuOrange1 =  $('#player1_Orange').text();
-            var feuOrange2 =  $('#player2_Orange').text();
+                var feuRouge1 =  $('#player1_Red').text();
+                var feuRouge2 =  $('#player2_Red').text();
 
-            score1 = distP1 - (feuRouge1*100) - (feuOrange1*50);
-            score2 = distP2 - (feuRouge2*100) - (feuOrange2*50);
+                var feuOrange1 =  $('#player1_Orange').text();
+                var feuOrange2 =  $('#player2_Orange').text();
 
-            //affichage du score et du gagnant
-            $("#player1_Score").text(score1);
-            $("#player2_Score").text(score2);
+                score1 = distP1 - (feuRouge1*100) - (feuOrange1*50);
+                score2 = distP2 - (feuRouge2*100) - (feuOrange2*50);
 
-            if (score1 > score2){
-                $("#winner").text("Player "+1);
-            }else if(score2 > score1){
-                $("#winner").text("Player "+2);
-            }else {
-                $("#winner").text("none");
+                //affichage du score et du gagnant
+                $("#player1_Score").text(score1);
+                $("#player2_Score").text(score2);
+
+                if (score1 > score2){
+                    $("#winner").text("Player "+1);
+                }else if(score2 > score1){
+                    $("#winner").text("Player "+2);
+                }else {
+                    $("#winner").text("none");
+                }
+
+                //gestion des affichages et visibilités
+               clearInterval(timeLeftInterval);
+                $("#gameOver").css("z-index",15);
+                $("#gameOver").css("visibility","visible");
+                $("#score1").css("visibility","visible");
+                $("#score2").css("visibility","visible");
+                $("#winnerDiv").css("visibility","visible");
+                $("#counter").css("visibility","hidden");
+                return;
             }
+        },1000);
+        
+    }
 
-            //gestion des affichages et visibilités
-           clearInterval(timeLeftInterval);
-            $("#gameOver").css("z-index",15);
-            $("#gameOver").css("visibility","visible");
-            $("#score1").css("visibility","visible");
-            $("#score2").css("visibility","visible");
-            $("#winnerDiv").css("visibility","visible");
-            $("#counter").css("visibility","hidden");
-            return;
-        }
-    },1000);
 
 }
 
@@ -452,6 +461,8 @@ function setTimeLeft(player){
         }
     },1000);    
 }
+
+$()
 
 </script>
 
