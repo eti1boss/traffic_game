@@ -38,7 +38,7 @@
 <div class="text left" style="color:white;z-index:10;position:absolute;top:280px">Feux rouges : <span id="player1_Red" ></span></div>
 <div id="player1_attack" class="middle" style="color:white;z-index:10;position:absolute;top:350px;left:155px"></div>
 
-<div id="counter" class="middle" style="color:white;z-index:10;position:absolute;top:20px;left:725px"></div>
+<div id="counter" class="middle" style="color:white;z-index:10;position:absolute;top:20px;margin-left:45%"></div>
 <div id="winnerDiv" class="middle" style="color:white;z-index:10;position:absolute;top:80px;left:380px;visibility: hidden">The winner is Player <span id="winner" ></span></div>
 <div id="score1" class="text middle" style="color:white;z-index:10;position:absolute;top:500px;visibility: hidden;left:155px">Score : <span id="player1_Score" ></span></div>
 <div id="score2" class="text middle" style="color:white;z-index:10;position:absolute;top:500px;visibility: hidden;right:155px">Score : <span id="player2_Score" ></span></div>
@@ -76,7 +76,9 @@
     var ogre;
     var delta;
     var clock = new THREE.Clock;
-    var playTime = 10;
+    var playTime = 60;
+    var nextTimeOut;
+    var type;
 
     function init() {
 
@@ -157,6 +159,8 @@
         if( window.location.search.substring(1) == "ogre" ){
         addOgre();    
         }
+
+        type = window.location.search.substring(1);
 
         camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
 
@@ -267,7 +271,7 @@ function addCube(){
 
             obj.castShadow = true;
             obj.receiveShadow = true;
-            // obj.rotation.y = Math.PI * 1;
+            obj.rotation.y = Math.PI * .5;
 
             obj.position.x = ways[2][pos].x;
             obj.position.y = ways[2][pos].y-7.2;
@@ -365,6 +369,7 @@ function launchGame(){
         playTime = playTime - 1;
         $("#counter").text((playTime) );
         if (playTime == 0){
+            clearInterval(nextTimeOut);
             currentSpeed = 0;
             clearInterval(engineOnP1);
             clearInterval(engineOffP1);
@@ -427,7 +432,7 @@ function setTimeLeft(player){
 
     $("#"+player2+"_attack").text(0);
 
-    setTimeout(function(){
+    nextTimeOut = setTimeout(function(){
         setTimeLeft(player2);
     },5000);
 

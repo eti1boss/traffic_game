@@ -88,16 +88,24 @@ function engine(player,type) {
             }
 
 
-            if(ogre){
+            if (type == "ogre") {
             	var direction = new THREE.Vector3(
 	                ways[wayID][obj.pos].x,
 	                ways[wayID][obj.pos].y+3,
 	                ways[wayID][obj.pos].z
                 );            	
-            } else {
+            }
+            if (type == "mclaren") {
             	var direction = new THREE.Vector3(
 	                ways[wayID][obj.pos].x,
 	                ways[wayID][obj.pos].y-7.1,
+	                ways[wayID][obj.pos].z
+                );            	
+            }
+            if (type == "cube") {
+            	var direction = new THREE.Vector3(
+	                ways[wayID][obj.pos].x,
+	                ways[wayID][obj.pos].y,
 	                ways[wayID][obj.pos].z
                 );            	
             }
